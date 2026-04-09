@@ -35,6 +35,9 @@ export default function StoryViewer() {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const currentStory = mockStories[currentIndex];
   const STORY_DURATION = 5000; // 5 seconds per story
@@ -122,7 +125,7 @@ export default function StoryViewer() {
               </Avatar>
               <div>
                 <p className="text-white font-semibold text-sm">Marcus Johnson</p>
-                <p className="text-white/80 text-xs">{getTimeAgo(currentStory.createdAt)}</p>
+                <p className="text-white/80 text-xs">{mounted ? getTimeAgo(currentStory.createdAt) : ''}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
