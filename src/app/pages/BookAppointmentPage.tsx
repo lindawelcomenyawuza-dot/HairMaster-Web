@@ -131,7 +131,7 @@ export function BookAppointmentPage() {
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-semibold">Book Appointment</h1>
+            <h1 className="text-xl font-semibold">Book Appointments</h1>
           </div>
         </div>
       </header>
