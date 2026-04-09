@@ -1,0 +1,49 @@
+11:01:08.062 Running build in Washington, D.C., USA (East) – iad1
+11:01:08.062 Build machine configuration: 2 cores, 8 GB
+11:01:08.255 Cloning github.com/lindawelcomenyawuza-dot/HairMaster-Web (Branch: main, Commit: bd31301)
+11:01:08.256 Previous build caches not available.
+11:01:08.685 Cloning completed: 430.000ms
+11:01:09.414 Running "vercel build"
+11:01:10.066 Vercel CLI 50.38.2
+11:01:10.357 Installing dependencies...
+11:01:28.708 
+11:01:28.709 added 264 packages in 18s
+11:01:28.709 
+11:01:28.710 36 packages are looking for funding
+11:01:28.710   run `npm fund` for details
+11:01:29.310 Detected Next.js version: 16.2.3
+11:01:29.315 Running "npm run build"
+11:01:29.478 
+11:01:29.479 > @figma/my-make-file@0.0.1 build
+11:01:29.479 > next build
+11:01:29.480 
+11:01:29.988 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+11:01:29.989 This information is used to shape Next.js' roadmap and prioritize features.
+11:01:29.989 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+11:01:29.990 https://nextjs.org/telemetry
+11:01:29.990 
+11:01:30.008 ▲ Next.js 16.2.3 (Turbopack)
+11:01:30.008 
+11:01:30.042   Creating an optimized production build ...
+11:01:42.517 ✓ Compiled successfully in 12.2s
+11:01:42.519   Running TypeScript ...
+11:01:51.532   Finished TypeScript in 9.0s ...
+11:01:51.537   Collecting page data using 1 worker ...
+11:01:52.032   Generating static pages using 1 worker (0/26) ...
+11:01:52.360   Generating static pages using 1 worker (6/26) 
+11:01:52.482   Generating static pages using 1 worker (12/26) 
+11:01:52.528 ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/reset-password". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+11:01:52.528     at S (/vercel/path0/.next/server/chunks/ssr/node_modules_next_0w2y7fz._.js:2:2692)
+11:01:52.528     at r (/vercel/path0/.next/server/chunks/ssr/node_modules_next_0w2y7fz._.js:4:6760)
+11:01:52.529     at n (/vercel/path0/.next/server/chunks/ssr/_0rw0bv5._.js:1:5328)
+11:01:52.529     at an (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:84267)
+11:01:52.529     at ai (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:86086)
+11:01:52.529     at al (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:107860)
+11:01:52.530     at ao (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:105275)
+11:01:52.530     at aa (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:84619)
+11:01:52.530     at ai (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:86135)
+11:01:52.530     at al (/vercel/path0/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.prod.js:2:107860)
+11:01:52.530 Error occurred prerendering page "/reset-password". Read more: https://nextjs.org/docs/messages/prerender-error
+11:01:52.530 Export encountered an error on /reset-password/page: /reset-password, exiting the build.
+11:01:52.550 ⨯ Next.js build worker exited with code: 1 and signal: null
+11:01:52.590 Error: Command "npm run build" exited with 1

@@ -39,7 +39,7 @@ export function PaystackPaymentPage() {
     }
   }, [paymentDetails, router]);
 
-  if (!paymentDetails) {
+  if (!paymentDetails || !paymentDetails.amount) {
     return null;
   }
 
