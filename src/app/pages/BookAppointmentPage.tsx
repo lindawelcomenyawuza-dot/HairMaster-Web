@@ -13,9 +13,30 @@ import { useApp } from '../context/AppContext';
 import { mockBarberShops, mockHairstylists, timeSlots } from '../data/mockData';
 import { toast } from 'sonner';
 
+export type PaymentStatus = 'pending' | 'partial' | 'completed';
+
+export interface Booking {
+  id?: string; // optional if added later
+  postId: string;
+  styleName: string;
+  barberName: string;
+  location: string;
+  price: number;
+  currency: string;
+  date: Date;
+  time: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
+  paymentMethod: 'online' | 'offline';
+  paymentStatus?: PaymentStatus; // <-- add this
+  depositAmount?: number;
+  depositPaid?: boolean;
+}
+
 export function BookAppointmentPage() {
   const router = useRouter();
   const { addBooking, navState, setNavState } = useApp();
+
+
 
   // Get data from navigation state
   const { post, shop, barberId, barberName, styleQuery } = navState as Record<string, any>;
@@ -29,14 +50,14 @@ export function BookAppointmentPage() {
   const [selectedBarber, setSelectedBarber] = useState('');
   const [selectedHairstylist, setSelectedHairstylist] = useState('');
   const [showHairstylistPopup, setShowHairstylistPopup] = useState(false);
-  
+
   const styleName = post?.styleName || styleQuery || '';
   const price = post?.price || 0;
   const currency = post?.currency || 'USD';
   const depositAmount = depositOption === '50' ? price * 0.5 : price;
 
   // Get available barbershops based on the style
-  const availableShops = post 
+  const availableShops = post
     ? mockBarberShops.filter(s => s.name === post.barberShop)
     : mockBarberShops;
 
@@ -195,11 +216,10 @@ export function BookAppointmentPage() {
                           <div
                             key={barber.id}
                             onClick={() => handleBarberSelect(barber.id)}
-                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                              selectedBarber === barber.id
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedBarber === barber.id
                                 ? 'border-purple-600 bg-purple-50'
                                 : 'border-gray-200 hover:border-purple-300'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-3">
                               <img
@@ -457,11 +477,10 @@ export function BookAppointmentPage() {
               <div
                 key={stylist.id}
                 onClick={() => handleHairstylistSelect(stylist.id)}
-                className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:shadow-lg ${
-                  selectedHairstylist === stylist.id
+                className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:shadow-lg ${selectedHairstylist === stylist.id
                     ? 'border-purple-600'
                     : 'border-gray-200 hover:border-purple-300'
-                }`}
+                  }`}
               >
                 <img
                   src={stylist.image}
