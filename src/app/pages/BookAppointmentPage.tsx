@@ -12,25 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useApp } from '../context/AppContext';
 import { mockBarberShops, mockHairstylists, timeSlots } from '../data/mockData';
 import { toast } from 'sonner';
-
-export type PaymentStatus = 'pending' | 'partial' | 'completed';
-
-export interface Booking {
-  id?: string; // optional if added later
-  postId: string;
-  styleName: string;
-  barberName: string;
-  location: string;
-  price: number;
-  currency: string;
-  date: Date;
-  time: string;
-  status: 'upcoming' | 'completed' | 'cancelled';
-  paymentMethod: 'online' | 'offline';
-  paymentStatus?: PaymentStatus; // <-- add this
-  depositAmount?: number;
-  depositPaid?: boolean;
-}
+import type { Currency } from '../types';
 
 export function BookAppointmentPage() {
   const router = useRouter();
@@ -105,11 +87,12 @@ export function BookAppointmentPage() {
       barberName: barberData?.name || '',
       location: shopData?.location || '',
       price: price,
-      currency: currency,
+      currency: currency as Currency,
       date: new Date(selectedDate),
       time: selectedTime,
       status: 'upcoming' as const,
       paymentMethod,
+      depositPaid: false,
     };
 
     // If paying online, redirect to payment page
