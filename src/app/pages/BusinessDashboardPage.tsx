@@ -18,7 +18,7 @@ import { StaffMember } from '../types';
 
 export function BusinessDashboardPage() {
   const router = useRouter();
-  const { user, bookings } = useApp();
+  const { user, bookings, setNavState } = useApp();
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
   const [staff, setStaff] = useState<StaffMember[]>(user?.staff || []);
@@ -82,14 +82,13 @@ export function BusinessDashboardPage() {
   };
 
   const handleSubscriptionPayment = () => {
-    router.push('/payment', {
-      state: {
-        amount: subscription?.monthlyFee || 100,
-        currency: subscription?.currency || 'ZAR',
-        type: 'subscription',
-        description: `${user.businessName} - Monthly Subscription`,
-      },
+    setNavState({
+      amount: subscription?.monthlyFee || 100,
+      currency: subscription?.currency || 'ZAR',
+      type: 'subscription',
+      description: `${user.businessName} - Monthly Subscription`,
     });
+    router.push('/payment');
   };
 
   return (
@@ -124,7 +123,7 @@ export function BusinessDashboardPage() {
                   <p className="text-sm text-orange-800 mt-1">
                     {isSubscriptionExpired 
                       ? 'Your subscription has expired. Pay to continue using business features.'
-                      : `Your trial ends on ${format(subscription!.trialEndsAt, 'MMM d, yyyy')}. Subscribe to continue.`}
+                      : `Your trial ends on ${subscription!.trialEndsAt ? format(subscription!.trialEndsAt, 'MMM d, yyyy') : 'soon'}. Subscribe to continue.`}
                   </p>
                   <Button
                     onClick={handleSubscriptionPayment}
@@ -153,7 +152,7 @@ export function BusinessDashboardPage() {
                           Active (Free Trial)
                         </Badge>
                         <span className="text-sm text-gray-600">
-                          Trial ends {format(subscription.trialEndsAt, 'MMM d, yyyy')}
+                          Trial ends {subscription.trialEndsAt ? format(subscription.trialEndsAt, 'MMM d, yyyy') : 'soon'}
                         </span>
                       </>
                     ) : subscription?.isActive ? (

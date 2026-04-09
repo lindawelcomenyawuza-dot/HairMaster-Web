@@ -30,22 +30,25 @@ export const currencyByCountry: Record<string, Currency> = {
 export function getCurrencyFromLocation(location?: string): Currency {
   if (!location) return 'USD';
   
-  // Check if location contains any country/region key
   for (const [region, currency] of Object.entries(currencyByCountry)) {
     if (location.toLowerCase().includes(region.toLowerCase())) {
       return currency;
     }
   }
   
-  return 'USD'; // Default to USD
+  return 'USD';
 }
 
-export function formatCurrency(amount: number, currency: Currency): string {
-  const symbol = currencySymbols[currency];
+function getSymbol(currency: string): string {
+  return currencySymbols[currency as Currency] ?? '$';
+}
+
+export function formatCurrency(amount: number, currency?: string): string {
+  const symbol = getSymbol(currency ?? 'USD');
   return `${symbol}${amount.toFixed(2)}`;
 }
 
-export function formatCurrencySimple(amount: number, currency: Currency): string {
-  const symbol = currencySymbols[currency];
+export function formatCurrencySimple(amount: number, currency?: string): string {
+  const symbol = getSymbol(currency ?? 'USD');
   return `${symbol}${amount}`;
 }

@@ -256,7 +256,7 @@ export function OrdersPage() {
                       </div>
 
                       {/* Delivery Status Progress */}
-                      {(order.status === 'processing' || order.status === 'shipped') && (
+                      {(order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered') && (
                         <div className="mt-4 pt-4 border-t">
                           <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
                             <span>Order Progress</span>

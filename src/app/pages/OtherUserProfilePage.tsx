@@ -12,7 +12,8 @@ import { mockUsers, mockBarberShops } from '../data/mockData';
 
 export function OtherUserProfilePage() {
   const router = useRouter();
-  const { userId } = useParams();
+  const params = useParams();
+  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId as string;
   const { posts, isFollowing, toggleFollow, setNavState } = useApp();
 
   const profileUser = mockUsers.find(u => u.id === userId);

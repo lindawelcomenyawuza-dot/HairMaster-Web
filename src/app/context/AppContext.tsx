@@ -14,7 +14,28 @@ export interface User {
   followers: number;
   following: number;
   location?: string;
+  country?: string;
+  currency?: string;
   businessName?: string;
+  isVerified?: boolean;
+  verificationBadge?: 'verified' | 'business' | 'pro';
+  subscription?: {
+    isActive: boolean;
+    startDate: Date;
+    endDate: Date;
+    isTrial: boolean;
+    trialEndsAt?: Date;
+    monthlyFee: number;
+    currency: string;
+    paymentHistory?: any[];
+  };
+  staff?: any[];
+  documents?: any;
+  savedPosts?: string[];
+  referralCode?: string;
+  loyaltyPoints?: number;
+  darkMode?: boolean;
+  language?: string;
   posts: number;
   totalSpent: number;
   discountTokens: number;
@@ -59,6 +80,7 @@ export interface Comment {
   createdAt: Date;
   likes: number;
   isLiked: boolean;
+  replies?: Comment[];
 }
 
 export interface Booking {
@@ -68,10 +90,14 @@ export interface Booking {
   barberName: string;
   location: string;
   price: number;
+  currency?: string;
+  depositAmount?: number;
+  depositPaid?: boolean;
   date: Date;
   time: string;
   status: 'upcoming' | 'completed' | 'cancelled';
   paymentMethod: 'online' | 'offline';
+  paymentStatus?: 'pending' | 'partial' | 'completed';
 }
 
 export interface ChatMessage {

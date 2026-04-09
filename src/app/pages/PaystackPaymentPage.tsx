@@ -18,6 +18,7 @@ interface PaymentDetails {
   description: string;
   bookingId?: string;
   bookingData?: any;
+  onSuccess?: () => void;
 }
 
 export function PaystackPaymentPage() {

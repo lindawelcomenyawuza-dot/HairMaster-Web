@@ -12,7 +12,8 @@ import { format } from 'date-fns';
 
 export function ChatPage() {
   const router = useRouter();
-  const { userId } = useParams();
+  const params = useParams();
+  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
   const { conversations, messages, sendMessage, user } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [messageText, setMessageText] = useState('');
