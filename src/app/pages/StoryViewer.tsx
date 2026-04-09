@@ -60,7 +60,7 @@ export default function StoryViewer() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isPaused, navigate]);
+  }, [currentIndex, isPaused, router]);
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
