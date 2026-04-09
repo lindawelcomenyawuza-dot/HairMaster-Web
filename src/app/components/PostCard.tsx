@@ -172,7 +172,7 @@ export function PostCard({ post }: PostCardProps) {
             </div>
             <div className="flex items-center gap-1 text-green-600 font-semibold">
               <DollarSign className="w-5 h-5" />
-              {formatCurrencySimple(post.price, post.currency)}
+              formatCurrencySimple(post.price, post.currency ?? 'USD')
             </div>
           </div>
 
