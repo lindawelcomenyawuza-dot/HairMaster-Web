@@ -1,0 +1,43 @@
+10:31:32.230 Running build in Washington, D.C., USA (East) – iad1
+10:31:32.231 Build machine configuration: 2 cores, 8 GB
+10:31:32.348 Cloning github.com/lindawelcomenyawuza-dot/HairMaster-Web (Branch: main, Commit: a08f593)
+10:31:32.349 Previous build caches not available.
+10:31:32.544 Cloning completed: 196.000ms
+10:31:32.878 Running "vercel build"
+10:31:33.533 Vercel CLI 50.38.2
+10:31:33.795 Installing dependencies...
+10:31:50.822 
+10:31:50.823 added 264 packages in 17s
+10:31:50.823 
+10:31:50.823 36 packages are looking for funding
+10:31:50.823   run `npm fund` for details
+10:31:50.922 Detected Next.js version: 16.2.2
+10:31:50.926 Running "npm run build"
+10:31:51.032 
+10:31:51.033 > @figma/my-make-file@0.0.1 build
+10:31:51.033 > next build
+10:31:51.033 
+10:31:51.521 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+10:31:51.522 This information is used to shape Next.js' roadmap and prioritize features.
+10:31:51.523 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+10:31:51.523 https://nextjs.org/telemetry
+10:31:51.523 
+10:31:51.538 ▲ Next.js 16.2.2 (Turbopack)
+10:31:51.539 
+10:31:51.571   Creating an optimized production build ...
+10:32:03.287 ✓ Compiled successfully in 11.4s
+10:32:03.289   Running TypeScript ...
+10:32:11.502 Failed to type check.
+10:32:11.502 
+10:32:11.503 ./src/app/pages/BookAppointmentPage.tsx:135:9
+10:32:11.503 Type error: Object literal may only specify known properties, and 'paymentStatus' does not exist in type 'Omit<Booking, "id">'.
+10:32:11.503 
+10:32:11.504   [90m133 |[0m       addBooking({
+10:32:11.504   [90m134 |[0m         ...bookingData,
+10:32:11.504 [31m[1m>[0m [90m135 |[0m         paymentStatus: [32m'pending'[0m,
+10:32:11.504   [90m    |[0m         [31m[1m^[0m
+10:32:11.504   [90m136 |[0m       });
+10:32:11.504   [90m137 |[0m
+10:32:11.505   [90m138 |[0m       toast.success([32m'Appointment booked successfully!'[0m);
+10:32:11.540 Next.js build worker exited with code: 1 and signal: null
+10:32:11.578 Error: Command "npm run build" exited with 1

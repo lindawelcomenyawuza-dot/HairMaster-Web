@@ -1,0 +1,196 @@
+You are working on a fullstack application with this structure:
+
+HairMasterFullStack/
+├── HairMaster-Backend/ (Node.js + GraphQL + MongoDB + Mongoose)
+├── HairMaster-Web/ (Next.js frontend currently using mockData.ts and AppContext)
+
+---
+
+GOAL:
+Replace ALL frontend mock data (mockData.ts + AppContext data logic) with a fully functional backend using MongoDB + GraphQL.
+
+The backend should become the single source of truth, and the frontend should fetch all data via GraphQL instead of using local mock data.
+
+---
+
+IMPORTANT GUIDELINES:
+
+* You are ALLOWED to restructure and improve:
+
+  * Mongoose models
+  * GraphQL schema (types, queries, mutations)
+  * Authentication logic
+  * Middleware
+
+* You may modify or refactor existing backend files if necessary for a clean and scalable architecture.
+
+* HOWEVER:
+
+  * Do NOT introduce new frameworks
+  * Do NOT change the overall project structure
+  * Do NOT over-engineer
+
+* The FINAL structure must remain simple, scalable, and consistent with the frontend needs.
+
+---
+
+SOURCE OF TRUTH:
+
+The frontend files define the REAL data structure of the app.
+
+You MUST use these as the primary reference:
+
+* HairMaster-Web/src/app/data/mockData.ts
+* HairMaster-Web/src/app/context/AppContext.tsx
+
+Extract and replicate ALL data structures and behaviors from these files.
+
+Do NOT skip any data relationships or features.
+
+---
+
+STEP 1: ANALYZE FRONTEND
+
+From mockData.ts and AppContext.tsx, extract ALL data models and relationships, including but not limited to:
+
+* Users
+* Posts
+* Bookings
+* Conversations
+* Messages
+* Comments
+* Likes
+* Saved posts
+* Followers / following
+* Any nested or computed fields
+
+Reconstruct a clean backend data model based on this.
+
+---
+
+STEP 2: DESIGN BACKEND DATA MODELS
+
+Using MongoDB + Mongoose:
+
+* Create or refactor models so they accurately represent the frontend data
+* Ensure relationships are properly structured (references or embedding where appropriate)
+* Maintain consistency with how the frontend uses the data
+
+---
+
+STEP 3: BUILD GRAPHQL LAYER
+
+Create or refactor:
+
+* GraphQL Types
+* Queries
+* Mutations
+
+Ensure the API fully supports ALL frontend operations from AppContext, including:
+
+Queries:
+
+* posts
+* bookings
+* users
+* single user
+* user posts
+* conversations
+* messages
+
+Mutations:
+
+* createPost
+* toggleLike
+* addComment
+* createBooking
+* updateBooking
+* toggleFollow
+* savePost
+* sendMessage
+
+---
+
+STEP 4: AUTHENTICATION
+
+* Use JWT-based authentication
+* Extract user from req.headers.authorization
+* Do NOT pass token inside GraphQL arguments
+* Ensure protected operations (like createBooking, createPost) require authentication
+
+---
+
+STEP 5: DATABASE SEEDING
+
+Create a script:
+
+/seed/seedData.js
+
+This script must:
+
+* Convert mockData.ts into MongoDB documents
+* Populate:
+
+  * Users
+  * Posts
+  * Bookings
+  * Conversations
+  * Messages
+
+Ensure:
+
+* Relationships (IDs) are correctly mapped
+* Dates are properly converted
+* No duplicate or broken references
+
+---
+
+STEP 6: FRONTEND MIGRATION
+
+Update frontend to remove dependency on:
+
+* mockData.ts
+* AppContext as a data source
+
+Replace with GraphQL (Apollo Client):
+
+Examples:
+
+* posts → useQuery(GET_POSTS)
+* bookings → useQuery(GET_BOOKINGS)
+* actions → useMutation(...)
+
+IMPORTANT:
+
+* Do NOT break UI
+* Keep AppContext only for UI state (not data storage)
+
+---
+
+STEP 7: OUTPUT
+
+Produce:
+
+1. Clean and improved backend:
+
+   * Models
+   * GraphQL schema (types, queries, mutations)
+   * Resolvers
+   * Auth middleware
+
+2. Seed script to migrate mock data → MongoDB
+
+3. Updated frontend examples using GraphQL
+
+4. Clear explanation of:
+   mockData → MongoDB → GraphQL → frontend mapping
+
+---
+
+FINAL RULE:
+
+Focus on building a clean, working fullstack system.
+
+The backend must fully replace mockData and support the frontend without requiring structural changes later.
+
+Avoid unnecessary complexity, but ensure completeness and correctness.
