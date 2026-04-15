@@ -50,11 +50,12 @@ A hair industry marketplace and social platform connecting users with profession
 ## Workflows
 
 - **Start application** — `npm run dev` (frontend, port 5000, public)
-- **Start backend** — `cd HairMaster-Backend && node server.js` (port 8000, internal)
 
 ## GraphQL API
 
-The Next.js API route at `/api/graphql` proxies requests to `http://localhost:8000/graphql`.
+The Next.js API route at `/api/graphql` proxies requests to the external backend defined by `BACKEND_GRAPHQL_URL` (currently `https://hairmaster-backend-1.onrender.com/graphql`).
+
+The backend is hosted externally on Render.com — do not modify the backend or any server-side code from this repository.
 
 ### Queries
 - `me` — current authenticated user

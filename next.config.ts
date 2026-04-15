@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     '*.kirk.replit.dev',
     '*.id.repl.co',
     '*.picard.replit.dev',
+    '*.riker.replit.dev',
   ],
   images: {
     remotePatterns: [
