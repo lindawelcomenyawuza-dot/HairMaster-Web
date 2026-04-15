@@ -140,7 +140,7 @@ export function ShopDetailPage() {
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center text-center">
                       <img
-                        src={barber.avatar || null}
+                        src={barber.avatar || undefined}
                         alt={barber.name}
                         className="w-24 h-24 rounded-full object-cover mb-4"
                       />

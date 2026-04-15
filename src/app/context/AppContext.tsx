@@ -280,8 +280,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const posts: Post[] = (postsData?.posts || []).map(normalizePost);
   const bookings = ((bookingsData as any)?.bookings || []).map(normalizeBooking);
   const conversations = ((conversationsData as any)?.conversations || []).map(normalizeConversation);
-  const myTokens: DiscountToken[] = tokensData?.myTokens || [];
-  const tokenTiers: TokenTier[] = tiersData?.tokenTiers || [];
+  const myTokens: DiscountToken[] = (tokensData as any)?.myTokens || [];
+  const tokenTiers: TokenTier[] = (tiersData as any)?.tokenTiers || [];
 
   const [loginMutation] = useMutation(LOGIN);
   const [registerMutation] = useMutation(REGISTER);
@@ -299,19 +299,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { data } = await loginMutation({ variables: { email, password } });
-    if (data?.login) {
-      localStorage.setItem('hm_token', data.login.token);
-      setUser(data.login.user);
-      setFollowingIds(data.login.user.followingIds || []);
+    const d = data as any;
+    if (d?.login) {
+      localStorage.setItem('hm_token', d.login.token);
+      setUser(d.login.user);
+      setFollowingIds(d.login.user.followingIds || []);
       await apolloClient.refetchQueries({ include: ['GetPosts', 'GetBookings', 'GetConversations'] });
     }
   };
 
   const register = async (name: string, email: string, password: string, accountType?: string) => {
     const { data } = await registerMutation({ variables: { name, email, password, accountType } });
-    if (data?.register) {
-      localStorage.setItem('hm_token', data.register.token);
-      setUser(data.register.user);
+    const d = data as any;
+    if (d?.register) {
+      localStorage.setItem('hm_token', d.register.token);
+      setUser(d.register.user);
     }
   };
 
@@ -323,8 +325,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (updates: { name?: string; bio?: string; avatar?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => {
     const { data } = await updateProfileMutation({ variables: updates });
-    if (data?.updateProfile) {
-      setUser((prev: any) => prev ? { ...prev, ...data.updateProfile } : data.updateProfile);
+    const d = data as any;
+    if (d?.updateProfile) {
+      setUser((prev: any) => prev ? { ...prev, ...d.updateProfile } : d.updateProfile);
     }
   };
 
@@ -333,8 +336,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       variables: { pointCost },
       refetchQueries: ['GetMyTokens', 'GetMe'],
     });
-    if (data?.redeemPoints) {
-      setUser((prev: any) => prev ? { ...prev, loyaltyPoints: data.redeemPoints.newLoyaltyPoints } : prev);
+    const d = data as any;
+    if (d?.redeemPoints) {
+      setUser((prev: any) => prev ? { ...prev, loyaltyPoints: d.redeemPoints.newLoyaltyPoints } : prev);
     }
   };
 

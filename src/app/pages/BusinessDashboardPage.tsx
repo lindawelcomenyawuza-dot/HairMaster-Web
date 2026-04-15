@@ -333,7 +333,7 @@ export function BusinessDashboardPage() {
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <img
-                              src={member.avatar || null}
+                              src={member.avatar || undefined}
                               alt={member.name}
                               className="w-12 h-12 rounded-full object-cover"
                             />

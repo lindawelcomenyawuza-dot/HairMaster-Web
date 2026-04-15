@@ -206,7 +206,7 @@ export function BookAppointmentPage() {
                           >
                             <div className="flex items-center gap-3">
                               <img
-                                src={barber.avatar || null}
+                                src={barber.avatar || undefined}
                                 alt={barber.name}
                                 className="w-12 h-12 rounded-full object-cover"
                               />

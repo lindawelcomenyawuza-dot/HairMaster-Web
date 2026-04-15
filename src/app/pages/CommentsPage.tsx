@@ -112,7 +112,7 @@ export function CommentsPage() {
                 <div key={comment.id} className="p-4">
                   <div className="flex gap-3">
                     <img
-                      src={comment.userAvatar || null}
+                      src={comment.userAvatar || undefined}
                       alt={comment.userName}
                       className="w-10 h-10 rounded-full bg-gray-200"
                     />
@@ -145,7 +145,7 @@ export function CommentsPage() {
                           {comment.replies.map((reply) => (
                             <div key={reply.id} className="flex gap-3">
                               <img
-                                src={reply.userAvatar || null}
+                                src={reply.userAvatar || undefined}
                                 alt={reply.userName}
                                 className="w-8 h-8 rounded-full bg-gray-200"
                               />
@@ -197,7 +197,7 @@ export function CommentsPage() {
           )}
           <div className="flex items-center gap-3">
             <img
-              src={post.userAvatar || null}
+              src={post.userAvatar || undefined}
               alt="Your avatar"
               className="w-10 h-10 rounded-full bg-gray-200"
             />
