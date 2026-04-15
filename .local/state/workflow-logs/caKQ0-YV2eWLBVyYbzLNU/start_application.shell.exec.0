@@ -1,0 +1,21 @@
+
+> @figma/my-make-file@0.0.1 dev
+> next dev --turbopack -p 5000
+
+[1G[0K[31m[1m⨯[22m[39m Failed to start server
+Error: listen EADDRINUSE: address already in use :::5000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::5000)
+    at new Promise (<anonymous>) {
+  code: [32m'EADDRINUSE'[39m,
+  errno: [33m-98[39m,
+  syscall: [32m'listen'[39m,
+  address: [32m'::'[39m,
+  port: [33m5000[39m
+}
+[35m[1mAttention[22m[39m: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[36mhttps://nextjs.org/telemetry[39m
+
+[?25h
+[1G[0K⠙[1G[0K

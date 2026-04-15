@@ -1,0 +1,18 @@
+
+> @figma/my-make-file@0.0.1 dev
+> next dev --turbopack -p 5000
+
+[1G[0K[1m[38;2;173;127;168m▲ Next.js 16.2.3[39m[22m (Turbopack)
+- Local:         http://localhost:5000
+- Network:       http://172.31.87.98:5000
+- Environments: .env.local
+[32m[1m✓[22m[39m Ready in 345ms
+
+ GET / [32m200[39m in 1743ms[2m (next.js: 1464ms, application-code: 278ms)[22m
+ POST /api/graphql [32m200[39m in 220ms[2m (next.js: 86ms, application-code: 134ms)[22m
+ POST /api/graphql [32m200[39m in 499ms[2m (next.js: 82ms, application-code: 416ms)[22m
+ POST /api/graphql [32m200[39m in 509ms[2m (next.js: 69ms, application-code: 439ms)[22m
+ GET /home [32m200[39m in 42ms[2m (next.js: 12ms, application-code: 30ms)[22m
+ POST /api/graphql [32m200[39m in 384ms[2m (next.js: 3ms, application-code: 381ms)[22m
+ POST /api/graphql [32m200[39m in 524ms[2m (next.js: 9ms, application-code: 516ms)[22m
+ POST /api/graphql [32m200[39m in 543ms[2m (next.js: 2ms, application-code: 541ms)[22m
