@@ -1,5 +1,5 @@
 import type { FormEventHandler, ReactNode } from 'react';
-import type { AccountType } from '../context/AppContext';
+import type { AccountType } from '../../context/AppContext';
 
 export type LoginAccountType = AccountType | null;
 
@@ -31,17 +31,3 @@ export interface FormActionsProps {
 }
 
 export type LoginActionsProps = AccountSelectionActionsProps | FormActionsProps;
-
-export interface UseLoginResult {
-  accountType: LoginAccountType;
-  email: string;
-  password: string;
-  error: string;
-  loading: boolean;
-  selectAccountType: (accountType: AccountType) => void;
-  setEmail: (value: string) => void;
-  setPassword: (value: string) => void;
-  handleLogin: FormEventHandler<HTMLFormElement>;
-  navigateToSignup: () => void;
-  resetAccountType: () => void;
-}

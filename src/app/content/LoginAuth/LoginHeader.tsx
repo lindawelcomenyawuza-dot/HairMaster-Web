@@ -1,7 +1,7 @@
 'use client';
 
 import { Scissors } from 'lucide-react';
-import { CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import type { LoginHeaderProps } from './login.types';
 
 export function LoginHeader({ title, description }: LoginHeaderProps) {
