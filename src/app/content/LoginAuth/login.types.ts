@@ -1,5 +1,5 @@
 import type { FormEventHandler, ReactNode } from 'react';
-import type { AccountType } from '../context/AppContext';
+import type { AccountType } from '../../context/AppContext';
 
 export type LoginAccountType = AccountType | null;
 

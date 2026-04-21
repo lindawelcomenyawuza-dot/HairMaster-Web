@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '../components/ui/button';
+import { Button } from '../../components/ui/button';
 import type { LoginActionsProps } from './login.types';
 
 export function LoginActions(props: LoginActionsProps) {

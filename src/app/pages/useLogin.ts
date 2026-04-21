@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '../context/AppContext';
 import type { AccountType } from '../context/AppContext';
-import type { UseLoginResult } from './login.types';
+import type { UseLoginResult } from '../content/LoginAuth/login.types';
 
 export function useLogin(): UseLoginResult {
   const router = useRouter();
