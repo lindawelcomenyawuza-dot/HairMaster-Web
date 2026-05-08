@@ -3,7 +3,7 @@ import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/clien
 import { setContext } from '@apollo/client/link/context';
 
 const httpLink = createHttpLink({
-  uri: '/api/graphql',
+  uri: 'https://hairmaster-backend-1.onrender.com/api/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {
