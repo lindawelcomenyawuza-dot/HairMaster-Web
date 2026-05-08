@@ -118,7 +118,9 @@ export function PostCard({ post }: PostCardProps) {
               <div className="flex items-center gap-2">
                 <p className="font-semibold">{post.userName}</p>
                 {post.type === 'verified' && (
-                  <CheckCircle className="w-4 h-4 text-green-600" title="Verified" />
+                  <span title="Verified" aria-label="Verified">
+                    <CheckCircle className="w-4 h-4 text-green-600" aria-hidden="true" />
+                  </span>
                 )}
               </div>
               {post.type === 'repost' && (

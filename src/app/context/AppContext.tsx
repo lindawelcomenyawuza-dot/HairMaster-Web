@@ -85,6 +85,7 @@ export interface Post {
   gender: 'male' | 'female' | 'unisex';
   createdAt: Date;
   hashtags?: string[];
+  products?: { name: string; price: number; type: string }[];
   taggedUsers?: { id: string; name: string }[];
   comments?: Comment[];
   commentsCount?: number;

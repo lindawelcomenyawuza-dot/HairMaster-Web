@@ -93,6 +93,7 @@ export interface Post {
   gender: 'male' | 'female' | 'unisex';
   createdAt: Date;
   hashtags?: string[];
+  products?: { name: string; price: number; type: string }[];
   taggedUsers?: { id: string; name: string }[];
   comments?: Comment[];
   commentsCount?: number;
@@ -159,7 +160,7 @@ export interface Order {
   totalAmount: number;
   orderDate: Date;
   deliveryDate?: Date;
-  status: 'pending' | 'accepted' | 'on_the_way' | 'completed' | 'cancelled';
+  status: 'pending' | 'processing' | 'accepted' | 'shipped' | 'on_the_way' | 'delivered' | 'completed' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'refunded';
   paymentMethod: 'online' | 'offline';
   shippingAddress: {
@@ -172,6 +173,18 @@ export interface Order {
   trackingNumber?: string;
   sellerId: string;
   sellerName: string;
+}
+
+export interface Story {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  image: string;
+  createdAt: Date;
+  expiresAt: Date;
+  views: number;
+  hasViewed: boolean;
 }
 
 export interface Booking {

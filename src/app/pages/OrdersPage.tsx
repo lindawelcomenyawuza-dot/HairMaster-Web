@@ -96,10 +96,13 @@ export function OrdersPage() {
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       case 'processing':
+      case 'accepted':
         return <Package className="w-5 h-5 text-blue-600" />;
       case 'shipped':
+      case 'on_the_way':
         return <Truck className="w-5 h-5 text-purple-600" />;
       case 'delivered':
+      case 'completed':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       case 'cancelled':
         return <XCircle className="w-5 h-5 text-red-600" />;
@@ -110,8 +113,11 @@ export function OrdersPage() {
     const variants: Record<Order['status'], 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'outline',
       processing: 'secondary',
+      accepted: 'secondary',
       shipped: 'default',
+      on_the_way: 'default',
       delivered: 'default',
+      completed: 'default',
       cancelled: 'destructive'
     };
     

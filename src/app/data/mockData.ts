@@ -233,6 +233,7 @@ export const mockUsers: User[] = [
 export const mockPosts: Post[] = [
   {
     id: '1',
+    type: 'portfolio',
     userId: '1',
     userName: 'Marcus Johnson',
     userAvatar: 'https://images.unsplash.com/photo-7591420 16096-a9d1a5ebcc09?w=150',
@@ -258,6 +259,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: '2',
+    type: 'portfolio',
     userId: '2',
     userName: 'Sarah Williams',
     userAvatar: 'https://images.unsplash.com/photo-1583331030595-6601e6c7b5d5?w=150',
@@ -287,6 +289,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: '3',
+    type: 'portfolio',
     userId: '2',
     userName: 'Sarah Williams',
     userAvatar: 'https://images.unsplash.com/photo-1583331030595-6601e6c7b5d5?w=150',
@@ -307,6 +310,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: '4',
+    type: 'portfolio',
     userId: '1',
     userName: 'Marcus Johnson',
     userAvatar: 'https://images.unsplash.com/photo-1759142016096-a9d1a5ebcc09?w=150',
