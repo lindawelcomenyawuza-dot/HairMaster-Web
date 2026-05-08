@@ -194,7 +194,7 @@ export default function BusinessManagement() {
                     <div className="flex items-start gap-4">
                       <Avatar className="w-16 h-16">
                         <AvatarImage src={staff.avatar} />
-                        <AvatarFallback>{staff.name[0]}</AvatarFallback>
+                        <AvatarFallback>{staff.name?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-lg">{staff.name}</h3>

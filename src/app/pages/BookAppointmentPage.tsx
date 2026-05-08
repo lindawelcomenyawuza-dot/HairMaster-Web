@@ -212,7 +212,7 @@ export function BookAppointmentPage() {
                               />
                               <div className="flex-1">
                                 <p className="font-semibold">{barber.name}</p>
-                                <p className="text-sm text-gray-600">{barber.specialties[0]}</p>
+                                <p className="text-sm text-gray-600">{barber.specialties?.[0] || 'General styling'}</p>
                                 <p className="text-xs text-yellow-600">★ {barber.rating}</p>
                               </div>
                             </div>

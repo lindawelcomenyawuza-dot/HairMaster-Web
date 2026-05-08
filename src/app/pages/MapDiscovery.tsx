@@ -180,7 +180,7 @@ export default function MapDiscovery() {
                 location.isOpen ? 'border-green-500' : 'border-gray-400'
               } bg-white shadow-lg`}>
                 <AvatarImage src={location.image} />
-                <AvatarFallback>{location.name[0]}</AvatarFallback>
+                <AvatarFallback>{location.name?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1">
                 <MapPin className={`w-6 h-6 ${

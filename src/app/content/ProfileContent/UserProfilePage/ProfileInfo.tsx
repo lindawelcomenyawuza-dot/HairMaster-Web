@@ -18,7 +18,7 @@ export function ProfileInfo({
           <div className="relative mb-4">
             <Avatar className="w-24 h-24">
               <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="text-2xl">{user.name[0]}</AvatarFallback>
+              <AvatarFallback className="text-2xl">{user.name?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
             </Avatar>
             <button
               onClick={onEditProfile}

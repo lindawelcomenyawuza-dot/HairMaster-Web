@@ -101,7 +101,7 @@ export function SearchResultsPage() {
                                 </div>
                               </div>
                               <Badge variant="outline" className="text-xs">
-                                {barber.specialties[0]}
+                                {barber.specialties?.[0] || 'General styling'}
                               </Badge>
                             </div>
                           ))}

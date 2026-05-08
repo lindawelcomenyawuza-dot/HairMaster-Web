@@ -22,6 +22,10 @@ interface PostCardProps {
   post: Post;
 }
 
+function getInitial(value?: string) {
+  return value?.trim().charAt(0).toUpperCase() || '?';
+}
+
 export function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { toggleLike, addBooking, addToLikedStyles, isFollowing, toggleFollow, toggleSavePost, addComment, setNavState, repost } = useApp();
@@ -112,7 +116,7 @@ export function PostCard({ post }: PostCardProps) {
               onClick={() => router.push(`/profile/${post.userId}`)}
             >
               <AvatarImage src={post.userAvatar} />
-              <AvatarFallback>{post.userName[0]}</AvatarFallback>
+              <AvatarFallback>{getInitial(post.userName)}</AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
@@ -321,7 +325,7 @@ export function PostCard({ post }: PostCardProps) {
                   <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-gray-50">
                     <Avatar className="cursor-pointer" onClick={() => router.push(`/profile/${comment.userId}`)}>
                       <AvatarImage src={comment.userAvatar} />
-                      <AvatarFallback>{comment.userName[0]}</AvatarFallback>
+                      <AvatarFallback>{getInitial(comment.userName)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <p className="font-semibold text-sm">Verified Customer</p>

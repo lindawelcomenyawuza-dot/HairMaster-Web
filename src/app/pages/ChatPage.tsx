@@ -71,7 +71,7 @@ export function ChatPage() {
               </Button>
               <Avatar className="w-10 h-10">
                 <AvatarImage src={selectedConversation.userAvatar} />
-                <AvatarFallback>{selectedConversation.userName[0]}</AvatarFallback>
+                <AvatarFallback>{selectedConversation.userName?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h1 className="font-semibold">{selectedConversation.userName}</h1>
@@ -169,7 +169,7 @@ export function ChatPage() {
                 <div className="flex gap-3">
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={conversation.userAvatar} />
-                    <AvatarFallback>{conversation.userName[0]}</AvatarFallback>
+                    <AvatarFallback>{conversation.userName?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">

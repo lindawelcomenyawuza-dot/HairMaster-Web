@@ -40,9 +40,7 @@ export function usePayment() {
     setIsProcessing(true);
 
     try {
-      const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-
-      if (paystackPublicKey && user?.email) {
+      if (user?.email) {
         const { accessCode, authorizationUrl, reference } = await initiatePayment({
           bookingId: paymentDetails.bookingId,
           amount: paymentDetails.amount,
@@ -56,7 +54,6 @@ export function usePayment() {
         }
 
         await openPaystackPopup({
-          publicKey: paystackPublicKey,
           email: user.email,
           amount: paymentDetails.amount,
           currency: paymentDetails.currency as string,

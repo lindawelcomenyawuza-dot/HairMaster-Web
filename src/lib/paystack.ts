@@ -98,7 +98,7 @@ function loadPaystackInline() {
 }
 
 export async function openPaystackPopup(params: {
-  publicKey: string;
+  publicKey?: string;
   email: string;
   amount: number;
   currency?: string;
@@ -129,6 +129,7 @@ export async function openPaystackPopup(params: {
   }
 
   if (!popup.newTransaction) throw new Error('Could not start Paystack checkout');
+  if (!params.publicKey) throw new Error('Paystack authorization URL or access code was not provided');
 
   popup.newTransaction({
     key: params.publicKey,

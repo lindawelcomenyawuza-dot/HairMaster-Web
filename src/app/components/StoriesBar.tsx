@@ -74,11 +74,11 @@ export function StoriesBar() {
             >
               <Avatar className="w-16 h-16 border-2 border-white">
                 <AvatarImage src={story.userAvatar} />
-                <AvatarFallback>{story.userName[0]}</AvatarFallback>
+                <AvatarFallback>{story.userName?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
             </div>
             <span className="text-xs font-medium text-gray-700 max-w-[64px] truncate">
-              {story.userName.split(' ')[0]}
+              {story.userName?.split(' ')[0] || 'User'}
             </span>
           </button>
         ))}

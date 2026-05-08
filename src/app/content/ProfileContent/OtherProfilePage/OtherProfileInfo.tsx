@@ -17,7 +17,7 @@ export function OtherProfileInfo({
           <div className="flex flex-col items-center md:items-start text-center md:text-left flex-1">
             <Avatar className="w-24 h-24 mb-4">
               <AvatarImage src={profileUser.avatar} />
-              <AvatarFallback className="text-2xl">{profileUser.name[0]}</AvatarFallback>
+              <AvatarFallback className="text-2xl">{profileUser.name?.trim().charAt(0).toUpperCase() || '?'}</AvatarFallback>
             </Avatar>
 
             <h2 className="text-2xl font-bold mb-1">{profileUser.name}</h2>
