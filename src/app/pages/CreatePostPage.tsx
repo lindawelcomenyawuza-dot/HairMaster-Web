@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, X, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -31,10 +31,17 @@ export function CreatePostPage() {
   const [description, setDescription] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'unisex'>('unisex');
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const isVideoPreview = selectedFile?.type.startsWith('video/');
 
   const completedBookings = bookings.filter(b => b.status === 'completed');
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
 
   const handleBookingSelect = (bookingId: string) => {
     setSelectedBookingId(bookingId);
@@ -46,57 +53,66 @@ export function CreatePostPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const clearSelectedImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview('');
+    setSelectedFile(null);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
 
-    setUploading(true);
-    try {
-      const result = await uploadFile(file);
-      setImageUrl(result.fileUrl);
-      toast.success('Image uploaded successfully');
-    } catch {
-      setImageUrl('');
-      toast.error('Upload failed — image will be stored locally');
-    } finally {
-      setUploading(false);
-    }
+    setSelectedFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || uploading) return;
 
     if (postType === 'verified' && !selectedBookingId) {
       alert('Please select a completed booking to create a Verified Cut post.');
       return;
     }
 
-    addPost({
-      type: postType,
-      userId: user.id,
-      userName: user.name,
-      userAvatar: user.avatar,
-      accountType: user.accountType,
-      image: imageUrl || imagePreview || 'https://images.unsplash.com/photo-1759142016096-a9d1a5ebcc09?w=800',
-      styleName,
-      barberName,
-      barberShop,
-      location,
-      price: 0,
-      rating: 0,
-      likes: 0,
-      isLiked: false,
-      description,
-      gender,
-      bookingId: postType === 'verified' ? selectedBookingId : undefined,
-    });
+    setUploading(true);
 
-    router.push('/home');
+    try {
+      const uploadedImage = selectedFile
+        ? (await uploadFile(selectedFile)).fileUrl
+        : 'https://images.unsplash.com/photo-1759142016096-a9d1a5ebcc09?w=800';
+
+      await addPost({
+        type: postType,
+        userId: user.id,
+        userName: user.name,
+        userAvatar: user.avatar,
+        accountType: user.accountType,
+        image: uploadedImage,
+        styleName,
+        barberName,
+        barberShop,
+        location,
+        price: 0,
+        rating: 0,
+        likes: 0,
+        isLiked: false,
+        description,
+        gender,
+        bookingId: postType === 'verified' ? selectedBookingId : undefined,
+      });
+
+      toast.success('Post created');
+      router.push('/home');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create post');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -193,11 +209,19 @@ export function CreatePostPage() {
             <Label>Upload Image</Label>
             {imagePreview ? (
               <div className="relative mt-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full aspect-square object-cover rounded-lg"
-                />
+                {isVideoPreview ? (
+                  <video
+                    src={imagePreview}
+                    className="w-full aspect-square object-cover rounded-lg"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full aspect-square object-cover rounded-lg"
+                  />
+                )}
                 {uploading && (
                   <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -210,15 +234,10 @@ export function CreatePostPage() {
                     variant="destructive"
                     size="icon"
                     className="absolute top-2 right-2"
-                    onClick={() => { setImagePreview(''); setImageUrl(''); }}
+                    onClick={clearSelectedImage}
                   >
                     <X className="w-4 h-4" />
                   </Button>
-                )}
-                {imageUrl && (
-                  <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Uploaded to cloud
-                  </div>
                 )}
               </div>
             ) : (
@@ -311,7 +330,7 @@ export function CreatePostPage() {
             size="lg"
           >
             {uploading ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading…</>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Posting…</>
             ) : postType === 'verified' ? '✓ Post Verified Cut' : 'Post'}
           </Button>
         </form>
