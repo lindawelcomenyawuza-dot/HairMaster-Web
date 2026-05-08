@@ -21,7 +21,6 @@ import {
   REDEEM_POINTS,
   USE_TOKEN,
 } from '../../lib/graphql/mutations';
-import { getRequiredGraphqlUrl } from '../../lib/api';
 
 export type AccountType = 'personal' | 'business';
 export type PostType = 'verified' | 'portfolio' | 'repost';
@@ -232,6 +231,30 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 type GetMeResponse = { me: User };
 type GetPostsResponse = { posts: Post[] };
+const GOOGLE_AUTH_TIMEOUT_MS = 12000;
+
+function persistAuthToken(token: string) {
+  localStorage.setItem('hm_token', token);
+  sessionStorage.setItem('hm_token', token);
+}
+
+function clearPersistedAuthToken() {
+  localStorage.removeItem('hm_token');
+  sessionStorage.removeItem('hm_token');
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
 
 function normalizePost(p: any): Post {
   return {
@@ -261,7 +284,7 @@ function normalizeConversation(c: any): Conversation {
 
 function hasToken(): boolean {
   if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem('hm_token');
+  return !!localStorage.getItem('hm_token') || !!sessionStorage.getItem('hm_token');
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -285,7 +308,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (meError) {
-      localStorage.removeItem('hm_token');
+      clearPersistedAuthToken();
       setAuthLoading(false);
     }
   }, [meError]);
@@ -330,6 +353,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const d = data as any;
     if (d?.login) {
       localStorage.setItem('hm_token', d.login.token);
+      sessionStorage.setItem('hm_token', d.login.token);
       setUser(d.login.user);
       setFollowingIds(d.login.user.followingIds || []);
       await apolloClient.refetchQueries({ include: ['GetPosts', 'GetBookings', 'GetConversations'] });
@@ -337,23 +361,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async (token: string) => {
-    localStorage.setItem('hm_token', token);
-    const res = await fetch(getRequiredGraphqlUrl(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ query: '{ me { id name email accountType avatar avatarKey bio followers following location country currency businessName isVerified verificationBadge loyaltyPoints discountTokens darkMode language posts totalSpent } }' }),
-    });
-    const json = await res.json();
-    const me = json?.data?.me;
-    if (me) {
+    persistAuthToken(token);
+
+    try {
+      const { data } = await withTimeout(
+        apolloClient.query<GetMeResponse>({
+          query: GET_ME,
+          fetchPolicy: 'network-only',
+        }),
+        GOOGLE_AUTH_TIMEOUT_MS,
+        'Google sign-in timed out'
+      );
+
+      const me = data?.me;
+      if (!me) {
+        throw new Error('Google login failed');
+      }
+
       setUser(me);
-      await apolloClient.refetchQueries({ include: ['GetPosts', 'GetBookings', 'GetConversations'] });
-    } else {
-      localStorage.removeItem('hm_token');
-      throw new Error('Google login failed');
+      setFollowingIds((me as any).followingIds || []);
+      void apolloClient.refetchQueries({ include: ['GetPosts', 'GetBookings', 'GetConversations'] });
+    } catch (error) {
+      clearPersistedAuthToken();
+      throw error instanceof Error ? error : new Error('Google login failed');
     }
   };
 
@@ -362,12 +392,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const d = data as any;
     if (d?.register) {
       localStorage.setItem('hm_token', d.register.token);
+      sessionStorage.setItem('hm_token', d.register.token);
       setUser(d.register.user);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('hm_token');
+    clearPersistedAuthToken();
     setUser(null);
     apolloClient.clearStore();
   };
