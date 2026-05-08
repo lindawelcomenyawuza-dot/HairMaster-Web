@@ -15,6 +15,9 @@ export function getPublicCloudflareUrl() {
 }
 
 export function getRequiredPublicApiUrl() {
+  const explicitApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, '');
+  if (explicitApiUrl) return explicitApiUrl;
+
   const graphqlUrl = getRequiredGraphqlUrl();
 
   try {
