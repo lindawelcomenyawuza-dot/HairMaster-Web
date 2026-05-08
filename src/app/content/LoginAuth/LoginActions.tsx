@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from '../../components/ui/button';
-import { getBackendBaseUrl } from '../../../lib/backend';
+import { getRequiredPublicApiUrl } from '../../../lib/api';
 import type { LoginActionsProps } from './login.types';
 
-const BACKEND = getBackendBaseUrl();
+const BACKEND = getRequiredPublicApiUrl();
 
 function GoogleIcon() {
   return (

@@ -1,28 +1,26 @@
-# Hair Master — Fullstack App
+# Hair Master — Web App
 
 A hair industry marketplace and social platform connecting users with professional barbers and hairstylists.
 
 ## Architecture
 
-### Frontend (Next.js — port 5000)
+### Frontend (Next.js)
 - **Framework**: Next.js 16 (Turbopack), React 18, TypeScript
 - **Styling**: Tailwind CSS v4, Radix UI primitives, Lucide icons
 - **State**: Apollo Client (GraphQL) + React Context (UI state only)
 - **Entry**: `app/layout.tsx` → `ApolloClientProvider` → `AppProvider`
 - **Auth persistence**: JWT stored in `localStorage` as `hm_token`; `GET_ME` query runs on mount to restore session. `authLoading` state prevents redirect flicker.
 
-### Backend (Express/GraphQL — port 8000)
-- **Framework**: Express 5, express-graphql, GraphQL 15
-- **Database**: MongoDB via Mongoose (requires `MONGODB_URI` env var)
-- **Auth**: JWT (jsonwebtoken + bcryptjs), 7-day expiry
-- **Entry**: `HairMaster-Backend/server.js`
+### Backend Boundary
+- The backend is a separate repository and deployment.
+- The web app communicates with it only through HTTP APIs.
+- Do not import backend files, depend on backend filesystem paths, or use local backend helpers in frontend code.
 
 ## Project Structure
 
 ```
 /
 ├── app/                    # Next.js App Router pages
-│   └── api/graphql/        # Proxy route → backend:8000
 ├── src/
 │   ├── app/
 │   │   ├── components/     # UI components (+ ApolloProvider.tsx)
@@ -35,27 +33,24 @@ A hair industry marketplace and social platform connecting users with profession
 │       └── graphql/
 │           ├── queries.ts   # All GraphQL queries
 │           └── mutations.ts # All GraphQL mutations
-├── HairMaster-Backend/
-│   ├── server.js           # Express + GraphQL server
-│   ├── middleware/auth.js  # JWT auth (getUser, requireAuth)
-│   ├── models/             # Mongoose models
-│   │   ├── User.js
-│   │   ├── Post.js
-│   │   ├── Booking.js
-│   │   └── Message.js
-│   ├── graphql/schema.js   # Full GraphQL schema + resolvers
-│   └── seed/seedData.js    # Database seeder
 ```
 
 ## Workflows
 
-- **Start application** — `npm run dev` (frontend, port 5000, public)
+- **Start frontend** — `npm run dev`
 
 ## GraphQL API
 
-The Next.js API route at `/api/graphql` proxies requests to the external backend defined by `BACKEND_GRAPHQL_URL` (currently `https://hairmaster-backend-1.onrender.com/graphql`).
+Apollo Client sends requests directly to the backend GraphQL HTTP endpoint defined by `NEXT_PUBLIC_GRAPHQL_URL`.
 
-The backend is hosted externally on Render.com — do not modify the backend or any server-side code from this repository.
+REST calls, such as upload and payments, use the backend origin defined by `NEXT_PUBLIC_API_URL`.
+
+Required frontend environment variables:
+
+```
+NEXT_PUBLIC_GRAPHQL_URL=https://hairmaster-backend-1.onrender.com/graphql
+NEXT_PUBLIC_API_URL=https://hairmaster-backend-1.onrender.com
+```
 
 ### Queries
 - `me` — current authenticated user
@@ -88,16 +83,6 @@ JWT token is stored in `localStorage` as `hm_token`. The Apollo Client reads it 
 | sarah@email.com | password123 | business |
 | david@email.com | password123 | personal |
 
-## Running the Seed Script
+## Environment Variables
 
-```bash
-cd HairMaster-Backend && npm run seed
-```
-
-## Environment Variables (HairMaster-Backend/.env)
-
-```
-MONGODB_URI=mongodb+srv://...
-PORT=8000
-JWT_SECRET=...
-```
+Backend environment variables belong in the separate HairMaster-Backend deployment. This frontend repository should only contain frontend-safe `NEXT_PUBLIC_*` values.

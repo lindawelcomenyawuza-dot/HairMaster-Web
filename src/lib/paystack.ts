@@ -1,6 +1,6 @@
-import { getBackendBaseUrl } from './backend';
+import { getRequiredPublicApiUrl } from './api';
 
-const BACKEND = getBackendBaseUrl();
+const BACKEND = getRequiredPublicApiUrl();
 const PAYSTACK_SCRIPT_ID = 'paystack-inline-v2-script';
 
 export interface PaystackInitResult {

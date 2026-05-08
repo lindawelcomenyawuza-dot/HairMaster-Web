@@ -1,6 +1,6 @@
-import { getBackendBaseUrl } from './backend';
+import { getRequiredPublicApiUrl } from './api';
 
-const BACKEND = getBackendBaseUrl();
+const BACKEND = getRequiredPublicApiUrl();
 
 export async function uploadFile(file: File): Promise<{ fileUrl: string; fileKey: string; fileType: string; mediaId: string }> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('hm_token') : null;

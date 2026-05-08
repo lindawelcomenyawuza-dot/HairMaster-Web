@@ -1,10 +1,9 @@
 'use client';
 import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client/core';
 import { setContext } from '@apollo/client/link/context';
-import { getGraphqlUrl } from './backend';
 
 const httpLink = createHttpLink({
-  uri: getGraphqlUrl(),
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
 });
 
 const authLink = setContext((_, { headers }) => {
