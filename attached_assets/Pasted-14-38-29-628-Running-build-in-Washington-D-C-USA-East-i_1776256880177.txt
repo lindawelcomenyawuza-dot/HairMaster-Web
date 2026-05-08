@@ -1,0 +1,40 @@
+14:38:29.628 Running build in Washington, D.C., USA (East) – iad1
+14:38:29.628 Build machine configuration: 2 cores, 8 GB
+14:38:29.780 Cloning github.com/lindawelcomenyawuza-dot/HairMaster-Web (Branch: main, Commit: 17a81d0)
+14:38:30.745 Cloning completed: 964.000ms
+14:38:31.001 Restored build cache from previous deployment (GsC6pcwKRgqukVqYKyAi1yesJaLw)
+14:38:31.206 Running "vercel build"
+14:38:31.839 Vercel CLI 51.2.1
+14:38:32.174 Installing dependencies...
+14:38:34.742 
+14:38:34.742 added 10 packages in 2s
+14:38:34.743 
+14:38:34.743 36 packages are looking for funding
+14:38:34.743   run `npm fund` for details
+14:38:34.777 Detected Next.js version: 16.2.3
+14:38:34.781 Running "npm run build"
+14:38:34.880 
+14:38:34.881 > @figma/my-make-file@0.0.1 build
+14:38:34.881 > next build
+14:38:34.881 
+14:38:36.480   Applying modifyConfig from Vercel
+14:38:36.495 ▲ Next.js 16.2.3 (Turbopack)
+14:38:36.496 - Environments: .env.local
+14:38:36.496 
+14:38:36.530   Creating an optimized production build ...
+14:38:52.818 ✓ Compiled successfully in 15.9s
+14:38:52.821   Running TypeScript ...
+14:39:02.858 Failed to type check.
+14:39:02.859 
+14:39:02.859 ./src/app/context/AppContext.tsx:283:49
+14:39:02.859 Type error: Property 'myTokens' does not exist on type '{}'.
+14:39:02.859 
+14:39:02.859   [90m281 |[0m ...[36mst[0m bookings = ((bookingsData [36mas[0m any)?.bookings || []).map(normalizeBooking);
+14:39:02.859   [90m282 |[0m ...[36mst[0m conversations = ((conversationsData [36mas[0m any)?.conversations || []).map(normalizeConv...
+14:39:02.860 [31m[1m>[0m [90m283 |[0m ...[36mst[0m myTokens: [33mDiscountToken[0m[] = tokensData?.myTokens || [];
+14:39:02.860   [90m    |[0m                                               [31m[1m^[0m
+14:39:02.860   [90m284 |[0m ...[36mst[0m tokenTiers: [33mTokenTier[0m[] = tiersData?.tokenTiers || [];
+14:39:02.860   [90m285 |[0m ...
+14:39:02.860   [90m286 |[0m ...[36mst[0m [loginMutation] = useMutation([33mLOGIN[0m);
+14:39:02.904 Next.js build worker exited with code: 1 and signal: null
+14:39:02.945 Error: Command "npm run build" exited with 1

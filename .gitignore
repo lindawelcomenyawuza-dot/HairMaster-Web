@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+build/
+.next/
+
+# env files
+.env
+.env.local
+.env.production
+.env.test
+
+# logs
+logs/
+*.log
+
+# system files
+.DS_Store
+
+# replit / AI / local system files
+.local/
+.replit
+replit.nix
+
+# caches
+.cache/
+.parcel-cache/
+.vite/
+
+# typescript
+*.tsbuildinfo
+
+# misc
+coverage/
+
+# firebase / prisma / etc
+prisma/dev.db
