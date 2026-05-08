@@ -1,9 +1,24 @@
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+function getBackendBase() {
+  const configured = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+  return configured.replace(/\/api\/graphql\/?$/, '').replace(/\/graphql\/?$/, '');
+}
+
+const BACKEND = getBackendBase();
+const PAYSTACK_SCRIPT_ID = 'paystack-inline-v2-script';
 
 export interface PaystackInitResult {
   authorizationUrl: string;
   accessCode: string;
   reference: string;
+}
+
+declare global {
+  interface Window {
+    PaystackPop?: new () => {
+      resumeTransaction?: (accessCode: string, callbacks?: Record<string, unknown>) => void;
+      newTransaction?: (options: Record<string, unknown>) => void;
+    };
+  }
 }
 
 export async function initiatePayment(params: {
@@ -52,26 +67,84 @@ export async function checkPaymentStatus(reference: string): Promise<{
   return res.json();
 }
 
-export function openPaystackPopup(params: {
+let paystackScriptPromise: Promise<void> | null = null;
+
+function loadPaystackInline() {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (window.PaystackPop) return Promise.resolve();
+
+  if (!paystackScriptPromise) {
+    paystackScriptPromise = new Promise<void>((resolve, reject) => {
+      if (window.PaystackPop) {
+        resolve();
+        return;
+      }
+
+      const existingScript = document.getElementById(PAYSTACK_SCRIPT_ID) as HTMLScriptElement | null;
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(), { once: true });
+        existingScript.addEventListener('error', () => reject(new Error('Could not load Paystack')), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = PAYSTACK_SCRIPT_ID;
+      script.src = 'https://js.paystack.co/v2/inline.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Could not load Paystack'));
+      document.body.appendChild(script);
+    });
+  }
+
+  return paystackScriptPromise;
+}
+
+export async function openPaystackPopup(params: {
   publicKey: string;
   email: string;
   amount: number;
   currency?: string;
   reference: string;
+  accessCode?: string;
   onSuccess: (reference: string) => void;
   onClose: () => void;
+  onError?: (message: string) => void;
 }) {
   if (typeof window === 'undefined') return;
+  await loadPaystackInline();
 
-  const handler = (window as any).PaystackPop?.setup({
-    key:       params.publicKey,
-    email:     params.email,
-    amount:    Math.round(params.amount * 100),
-    currency:  params.currency || 'NGN',
-    ref:       params.reference,
-    callback:  (response: { reference: string }) => params.onSuccess(response.reference),
-    onClose:   params.onClose,
+  if (!window.PaystackPop) throw new Error('Could not start Paystack checkout');
+
+  const popup = new window.PaystackPop();
+
+  if (params.accessCode && popup.resumeTransaction) {
+    popup.resumeTransaction(params.accessCode, {
+      onSuccess: (response: { reference?: string; trxref?: string }) => {
+        params.onSuccess(response.reference || response.trxref || params.reference);
+      },
+      onCancel: params.onClose,
+      onError: (error: { message?: string }) => {
+        params.onError?.(error.message || 'Payment failed to load');
+      },
+    });
+    return;
+  }
+
+  if (!popup.newTransaction) throw new Error('Could not start Paystack checkout');
+
+  popup.newTransaction({
+    key: params.publicKey,
+    email: params.email,
+    amount: Math.round(params.amount * 100),
+    currency: params.currency || 'NGN',
+    reference: params.reference,
+    onSuccess: (response: { reference?: string; trxref?: string }) => {
+      params.onSuccess(response.reference || response.trxref || params.reference);
+    },
+    onCancel: params.onClose,
+    onError: (error: { message?: string }) => {
+      params.onError?.(error.message || 'Payment failed to load');
+    },
   });
-
-  handler?.openIframe();
 }

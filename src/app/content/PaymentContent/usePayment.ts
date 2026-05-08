@@ -43,19 +43,25 @@ export function usePayment() {
       const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 
       if (paystackPublicKey && user?.email) {
-        const { reference } = await initiatePayment({
+        const { accessCode, authorizationUrl, reference } = await initiatePayment({
           bookingId: paymentDetails.bookingId,
           amount: paymentDetails.amount,
           currency: paymentDetails.currency as string,
           email: user.email,
         });
 
-        openPaystackPopup({
+        if (!accessCode && authorizationUrl) {
+          window.location.href = authorizationUrl;
+          return;
+        }
+
+        await openPaystackPopup({
           publicKey: paystackPublicKey,
           email: user.email,
           amount: paymentDetails.amount,
           currency: paymentDetails.currency as string,
           reference,
+          accessCode,
           onSuccess: async (ref: string) => {
             let confirmed = false;
             for (let i = 0; i < 5; i++) {
@@ -81,6 +87,10 @@ export function usePayment() {
           onClose: () => {
             setIsProcessing(false);
             toast.info('Payment cancelled');
+          },
+          onError: (message: string) => {
+            setIsProcessing(false);
+            toast.error(message);
           },
         });
         return;
