@@ -12,6 +12,8 @@ export const CREATE_POST = gql`
     $styleName: String!
     $barberName: String
     $barberShop: String
+    $salonId: ID
+    $stylistId: ID
     $location: String
     $price: Float
     $currency: String
@@ -29,6 +31,8 @@ export const CREATE_POST = gql`
       styleName: $styleName
       barberName: $barberName
       barberShop: $barberShop
+      salonId: $salonId
+      stylistId: $stylistId
       location: $location
       price: $price
       currency: $currency
@@ -66,6 +70,30 @@ export const ADD_COMMENT = gql`
     addComment(postId: $postId, content: $content) {
       ...PostFields
     }
+  }
+`;
+
+export const EDIT_COMMENT = gql`
+  ${POST_FIELDS}
+  mutation EditComment($postId: ID!, $commentId: ID!, $content: String!) {
+    editComment(postId: $postId, commentId: $commentId, content: $content) {
+      ...PostFields
+    }
+  }
+`;
+
+export const DELETE_COMMENT = gql`
+  ${POST_FIELDS}
+  mutation DeleteComment($postId: ID!, $commentId: ID!) {
+    deleteComment(postId: $postId, commentId: $commentId) {
+      ...PostFields
+    }
+  }
+`;
+
+export const REPORT_COMMENT = gql`
+  mutation ReportComment($postId: ID!, $commentId: ID!, $reason: String) {
+    reportComment(postId: $postId, commentId: $commentId, reason: $reason)
   }
 `;
 

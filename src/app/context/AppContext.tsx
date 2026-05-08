@@ -9,6 +9,9 @@ import {
   REPOST,
   TOGGLE_LIKE,
   ADD_COMMENT,
+  EDIT_COMMENT,
+  DELETE_COMMENT,
+  REPORT_COMMENT,
   TOGGLE_SAVE_POST,
   CREATE_BOOKING,
   UPDATE_BOOKING,
@@ -77,6 +80,12 @@ export interface Post {
   barberName: string;
   barberId?: string;
   barberShop?: string;
+  salonId?: string;
+  salonName?: string;
+  stylistId?: string;
+  stylistName?: string;
+  stylistAvatar?: string;
+  salonLogo?: string;
   location: string;
   bookingId?: string;
   originalPostId?: string;
@@ -193,7 +202,10 @@ interface AppContextType {
   toggleLike: (postId: string) => void;
   ratePost: (postId: string, rating: number) => void;
   toggleSavePost: (postId: string) => void;
-  addComment: (postId: string, content: string) => void;
+  addComment: (postId: string, content: string) => Promise<void>;
+  editComment: (postId: string, commentId: string, content: string) => Promise<void>;
+  deleteComment: (postId: string, commentId: string) => Promise<void>;
+  reportComment: (postId: string, commentId: string, reason?: string) => Promise<void>;
   bookings: Booking[];
   addBooking: (booking: Omit<Booking, 'id'>) => Promise<void>;
   updateBooking: (id: string, updates: Partial<Booking>) => void;
@@ -301,6 +313,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [repostMutation] = useMutation(REPOST);
   const [toggleLikeMutation] = useMutation(TOGGLE_LIKE);
   const [addCommentMutation] = useMutation(ADD_COMMENT);
+  const [editCommentMutation] = useMutation(EDIT_COMMENT);
+  const [deleteCommentMutation] = useMutation(DELETE_COMMENT);
+  const [reportCommentMutation] = useMutation(REPORT_COMMENT);
   const [toggleSaveMutation] = useMutation(TOGGLE_SAVE_POST);
   const [createBookingMutation] = useMutation(CREATE_BOOKING);
   const [updateBookingMutation] = useMutation(UPDATE_BOOKING);
@@ -391,6 +406,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         styleName: post.styleName,
         barberName: post.barberName,
         barberShop: post.barberShop,
+        salonId: post.salonId,
+        stylistId: post.stylistId,
         location: post.location,
         price: post.price,
         currency: post.currency,
@@ -420,8 +437,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toggleSaveMutation({ variables: { postId }, refetchQueries: ['GetPosts', 'GetMe'] });
   };
 
-  const addComment = (postId: string, content: string) => {
-    addCommentMutation({ variables: { postId, content }, refetchQueries: ['GetPosts'] });
+  const addComment = async (postId: string, content: string) => {
+    await addCommentMutation({ variables: { postId, content }, refetchQueries: ['GetPosts'] });
+  };
+
+  const editComment = async (postId: string, commentId: string, content: string) => {
+    await editCommentMutation({ variables: { postId, commentId, content }, refetchQueries: ['GetPosts'] });
+  };
+
+  const deleteComment = async (postId: string, commentId: string) => {
+    await deleteCommentMutation({ variables: { postId, commentId }, refetchQueries: ['GetPosts'] });
+  };
+
+  const reportComment = async (postId: string, commentId: string, reason?: string) => {
+    await reportCommentMutation({ variables: { postId, commentId, reason } });
   };
 
   const addBooking = async (booking: Omit<Booking, 'id'>) => {
@@ -492,7 +521,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         user, setUser, authLoading, login, loginWithGoogle, register, logout, updateProfile,
         posts, postsLoading, refetchPosts, addPost, repost,
-        toggleLike, ratePost, toggleSavePost, addComment,
+        toggleLike, ratePost, toggleSavePost, addComment, editComment, deleteComment, reportComment,
         bookings, addBooking, updateBooking,
         likedStyles, doneStyles, addToLikedStyles, addToDoneStyles,
         conversations, messages: localMessages, sendMessage,

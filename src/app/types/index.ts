@@ -80,6 +80,12 @@ export interface Post {
   barberName: string;
   barberId?: string;
   barberShop?: string;
+  salonId?: string;
+  salonName?: string;
+  stylistId?: string;
+  stylistName?: string;
+  stylistAvatar?: string;
+  salonLogo?: string;
   location: string;
   bookingId?: string;
   originalPostId?: string;

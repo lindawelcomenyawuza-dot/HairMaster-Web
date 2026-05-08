@@ -17,6 +17,12 @@ export const POST_FIELDS = gql`
     barberName
     barberId
     barberShop
+    salonId
+    salonName
+    stylistId
+    stylistName
+    stylistAvatar
+    salonLogo
     location
     bookingId
     originalPostId
@@ -40,11 +46,34 @@ export const POST_FIELDS = gql`
       id
       postId
       userId
+      userName
       userAvatar
       content
       createdAt
       likes
       isLiked
+    }
+  }
+`;
+
+export const SEARCH_SALONS = gql`
+  query SearchSalons($search: String!) {
+    searchSalons(search: $search) {
+      id
+      name
+      city
+      logo
+    }
+  }
+`;
+
+export const GET_SALON_STAFF = gql`
+  query GetSalonStaff($salonId: ID!) {
+    getSalonStaff(salonId: $salonId) {
+      id
+      displayName
+      avatar
+      role
     }
   }
 `;

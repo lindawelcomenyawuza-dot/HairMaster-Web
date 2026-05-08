@@ -2,19 +2,25 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Heart, Send, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Edit3, Flag, Loader2, Send, MoreVertical, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
 import { useApp } from '../context/AppContext';
 import { toast } from 'sonner';
 
 export function CommentsPage() {
   const router = useRouter();
   const { postId } = useParams();
-  const { posts, addComment } = useApp();
+  const { posts, user, addComment, editComment, deleteComment, reportComment } = useApp();
   const [commentText, setCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const [busyCommentId, setBusyCommentId] = useState<string | null>(null);
+  const [deletedCommentIds, setDeletedCommentIds] = useState<string[]>([]);
+  const [editedComments, setEditedComments] = useState<Record<string, string>>({});
 
   const post = posts.find(p => p.id === postId);
 
@@ -26,13 +32,68 @@ export function CommentsPage() {
     );
   }
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     if (!commentText.trim()) return;
 
-    addComment(post.id, commentText);
+    const content = commentText.trim();
     setCommentText('');
     setReplyingTo(null);
-    toast.success('Comment posted!');
+    try {
+      await addComment(post.id, content);
+      toast.success('Comment posted!');
+    } catch (err) {
+      setCommentText(content);
+      toast.error(err instanceof Error ? err.message : 'Could not post comment');
+    }
+  };
+
+  const handleEditComment = async (commentId: string) => {
+    const content = editingText.trim();
+    if (!content) return;
+    const previous = editedComments[commentId];
+    setEditedComments(prev => ({ ...prev, [commentId]: content }));
+    setEditingCommentId(null);
+    setBusyCommentId(commentId);
+    try {
+      await editComment(post.id, commentId, content);
+      toast.success('Comment updated');
+    } catch (err) {
+      setEditedComments(prev => {
+        const next = { ...prev };
+        if (previous === undefined) delete next[commentId];
+        else next[commentId] = previous;
+        return next;
+      });
+      toast.error(err instanceof Error ? err.message : 'Could not edit comment');
+    } finally {
+      setBusyCommentId(null);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    setDeletedCommentIds(prev => [...prev, commentId]);
+    setBusyCommentId(commentId);
+    try {
+      await deleteComment(post.id, commentId);
+      toast.success('Comment deleted');
+    } catch (err) {
+      setDeletedCommentIds(prev => prev.filter(id => id !== commentId));
+      toast.error(err instanceof Error ? err.message : 'Could not delete comment');
+    } finally {
+      setBusyCommentId(null);
+    }
+  };
+
+  const handleReportComment = async (commentId: string) => {
+    setBusyCommentId(commentId);
+    try {
+      await reportComment(post.id, commentId, 'Reported from comment menu');
+      toast.success('Comment reported');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not report comment');
+    } finally {
+      setBusyCommentId(null);
+    }
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -101,14 +162,18 @@ export function CommentsPage() {
 
         {/* Comments List */}
         <div className="bg-white min-h-[60vh]">
-          {(!post.comments || post.comments.length === 0) ? (
+          {(!post.comments || post.comments.filter(comment => !deletedCommentIds.includes(comment.id)).length === 0) ? (
             <div className="p-12 text-center">
               <p className="text-gray-500 mb-2">No comments yet</p>
               <p className="text-sm text-gray-400">Be the first to comment!</p>
             </div>
           ) : (
             <div className="divide-y">
-              {post.comments.map((comment) => (
+              {post.comments.filter(comment => !deletedCommentIds.includes(comment.id)).map((comment) => {
+                const isOwner = user?.id === comment.userId;
+                const content = editedComments[comment.id] ?? comment.content;
+                const isBusy = busyCommentId === comment.id;
+                return (
                 <div key={comment.id} className="p-4">
                   <div className="flex gap-3">
                     <img
@@ -119,7 +184,16 @@ export function CommentsPage() {
                     <div className="flex-1">
                       <div className="bg-gray-50 rounded-2xl px-4 py-2">
                         <p className="font-semibold text-sm mb-1">{comment.userName}</p>
-                        <p className="text-gray-900">{comment.content}</p>
+                        {editingCommentId === comment.id ? (
+                          <div className="flex gap-2">
+                            <Input value={editingText} onChange={(e) => setEditingText(e.target.value)} autoFocus />
+                            <Button size="sm" onClick={() => handleEditComment(comment.id)} disabled={!editingText.trim() || isBusy}>
+                              Save
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="text-gray-900">{content}</p>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 mt-2 px-4">
                         <button
@@ -169,12 +243,32 @@ export function CommentsPage() {
                         </div>
                       )}
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isBusy}>
+                          {isBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreVertical className="w-4 h-4" />}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isOwner ? (
+                          <>
+                            <DropdownMenuItem onClick={() => { setEditingCommentId(comment.id); setEditingText(content); }}>
+                              <Edit3 className="w-4 h-4 mr-2" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteComment(comment.id)}>
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <DropdownMenuItem onClick={() => handleReportComment(comment.id)}>
+                            <Flag className="w-4 h-4 mr-2" /> Report
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
@@ -197,7 +291,7 @@ export function CommentsPage() {
           )}
           <div className="flex items-center gap-3">
             <img
-              src={post.userAvatar || undefined}
+              src={user?.avatar || undefined}
               alt="Your avatar"
               className="w-10 h-10 rounded-full bg-gray-200"
             />
@@ -207,7 +301,7 @@ export function CommentsPage() {
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Write a comment..."
                 className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
-                onKeyPress={(e) => e.key === 'Enter' && handleSendComment()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
               />
               <Button
                 onClick={handleSendComment}

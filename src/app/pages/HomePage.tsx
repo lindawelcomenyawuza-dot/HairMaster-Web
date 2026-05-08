@@ -39,9 +39,11 @@ export function HomePage() {
   };
 
   const filteredPosts = posts.filter((post) => {
+    const normalizedSearch = searchQuery.toLowerCase();
     const matchesSearch =
-      post.styleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.barberName.toLowerCase().includes(searchQuery.toLowerCase());
+      (post.styleName || '').toLowerCase().includes(normalizedSearch) ||
+      (post.barberName || post.stylistName || '').toLowerCase().includes(normalizedSearch) ||
+      (post.barberShop || post.salonName || '').toLowerCase().includes(normalizedSearch);
     const matchesGender = genderFilter === 'all' || post.gender === genderFilter;
 
     let matchesPrice = true;
@@ -56,7 +58,7 @@ export function HomePage() {
     }
 
     const matchesLocation =
-      locationFilter === 'all' || post.location.includes(locationFilter);
+      locationFilter === 'all' || (post.location || '').includes(locationFilter);
 
     return matchesSearch && matchesGender && matchesPrice && matchesLocation;
   });

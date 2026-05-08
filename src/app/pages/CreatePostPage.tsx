@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLazyQuery } from '@apollo/client/react';
 import { ArrowLeft, Upload, X, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -18,6 +19,21 @@ import { useApp } from '../context/AppContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { uploadFile } from '../../lib/upload';
+import { GET_SALON_STAFF, SEARCH_SALONS } from '../../lib/graphql/queries';
+
+type SalonOption = {
+  id: string;
+  name: string;
+  city?: string;
+  logo?: string;
+};
+
+type StaffOption = {
+  id: string;
+  displayName: string;
+  avatar?: string;
+  role: string;
+};
 
 export function CreatePostPage() {
   const router = useRouter();
@@ -27,13 +43,21 @@ export function CreatePostPage() {
   const [styleName, setStyleName] = useState('');
   const [barberName, setBarberName] = useState('');
   const [barberShop, setBarberShop] = useState('');
+  const [salonSearch, setSalonSearch] = useState('');
+  const [selectedSalon, setSelectedSalon] = useState<SalonOption | null>(null);
+  const [selectedStylist, setSelectedStylist] = useState<StaffOption | null>(null);
+  const [selectorError, setSelectorError] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'unisex'>('unisex');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [searchSalons, { data: salonData, loading: salonsLoading }] = useLazyQuery<{ searchSalons: SalonOption[] }>(SEARCH_SALONS);
+  const [loadSalonStaff, { data: staffData, loading: staffLoading, error: staffError }] = useLazyQuery<{ getSalonStaff: StaffOption[] }>(GET_SALON_STAFF);
   const isVideoPreview = selectedFile?.type.startsWith('video/');
+  const salonOptions: SalonOption[] = salonData?.searchSalons || [];
+  const staffOptions: StaffOption[] = staffData?.getSalonStaff || [];
 
   const completedBookings = bookings.filter(b => b.status === 'completed');
 
@@ -43,6 +67,14 @@ export function CreatePostPage() {
     };
   }, [imagePreview]);
 
+  useEffect(() => {
+    if (selectedSalon || salonSearch.trim().length < 2) return;
+    const timer = window.setTimeout(() => {
+      searchSalons({ variables: { search: salonSearch.trim() } });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [salonSearch, searchSalons, selectedSalon]);
+
   const handleBookingSelect = (bookingId: string) => {
     setSelectedBookingId(bookingId);
     const booking = completedBookings.find(b => b.id === bookingId);
@@ -51,6 +83,31 @@ export function CreatePostPage() {
       setBarberName(booking.barberName);
       setLocation(booking.location);
     }
+  };
+
+  const handleSalonSelect = (salon: SalonOption) => {
+    setSelectedSalon(salon);
+    setSalonSearch(salon.name);
+    setBarberShop(salon.name);
+    setLocation(salon.city || '');
+    setSelectedStylist(null);
+    setBarberName('');
+    setSelectorError('');
+    loadSalonStaff({ variables: { salonId: salon.id } });
+  };
+
+  const handleSalonInput = (value: string) => {
+    setSalonSearch(value);
+    setBarberShop(value);
+    setSelectedSalon(null);
+    setSelectedStylist(null);
+    setBarberName('');
+  };
+
+  const handleStylistSelect = (stylist: StaffOption) => {
+    setSelectedStylist(stylist);
+    setBarberName(stylist.displayName);
+    setSelectorError('');
   };
 
   const clearSelectedImage = () => {
@@ -79,6 +136,11 @@ export function CreatePostPage() {
       return;
     }
 
+    if (!selectedSalon || !selectedStylist) {
+      setSelectorError('Select a registered salon and stylist before posting.');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -96,6 +158,12 @@ export function CreatePostPage() {
         styleName,
         barberName,
         barberShop,
+        salonId: selectedSalon.id,
+        salonName: selectedSalon.name,
+        stylistId: selectedStylist.id,
+        stylistName: selectedStylist.displayName,
+        stylistAvatar: selectedStylist.avatar,
+        salonLogo: selectedSalon.logo,
         location,
         price: 0,
         rating: 0,
@@ -267,24 +335,74 @@ export function CreatePostPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="barberName">Barber Name *</Label>
+            <Label htmlFor="barberShop">Barber Shop / Salon *</Label>
             <Input
-              id="barberName"
-              value={barberName}
-              onChange={(e) => setBarberName(e.target.value)}
-              placeholder="Who did this hairstyle?"
+              id="barberShop"
+              value={salonSearch}
+              onChange={(e) => handleSalonInput(e.target.value)}
+              placeholder="Search registered salons"
+              autoComplete="off"
               required
             />
+            {!selectedSalon && salonSearch.trim().length >= 2 && (
+              <div className="rounded-md border bg-white shadow-sm overflow-hidden">
+                {salonsLoading ? (
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Searching salons...
+                  </div>
+                ) : salonOptions.length > 0 ? (
+                  salonOptions.map((salon) => (
+                    <button
+                      key={salon.id}
+                      type="button"
+                      onClick={() => handleSalonSelect(salon)}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50"
+                    >
+                      <img src={salon.logo || undefined} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                      <span className="flex-1">
+                        <span className="block text-sm font-medium">{salon.name}</span>
+                        <span className="block text-xs text-gray-500">{salon.city || 'Registered salon'}</span>
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-gray-500">No registered salon found</div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="barberShop">Barber Shop / Salon</Label>
-            <Input
-              id="barberShop"
-              value={barberShop}
-              onChange={(e) => setBarberShop(e.target.value)}
-              placeholder="Shop name (optional)"
-            />
+            <Label htmlFor="barberName">Barber / Stylist *</Label>
+            <Select
+              value={selectedStylist?.id || ''}
+              onValueChange={(value) => {
+                const stylist = staffOptions.find(member => member.id === value);
+                if (stylist) handleStylistSelect(stylist);
+              }}
+              disabled={!selectedSalon || staffLoading || !!staffError}
+            >
+              <SelectTrigger id="barberName">
+                <SelectValue placeholder={
+                  !selectedSalon
+                    ? 'Select a salon first'
+                    : staffLoading
+                    ? 'Loading staff...'
+                    : staffOptions.length === 0
+                    ? 'No staff registered'
+                    : 'Choose a stylist'
+                } />
+              </SelectTrigger>
+              <SelectContent>
+                {staffOptions.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.displayName} · {member.role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {staffError && <p className="text-sm text-red-600">Could not load salon staff.</p>}
+            {selectorError && <p className="text-sm text-red-600">{selectorError}</p>}
           </div>
 
           <div className="space-y-2">
