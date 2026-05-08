@@ -5,6 +5,7 @@ export const UPDATE_PROFILE = gql`
     $name: String
     $bio: String
     $avatar: String
+    $avatarKey: String
     $location: String
     $country: String
     $currency: String
@@ -16,6 +17,7 @@ export const UPDATE_PROFILE = gql`
       name: $name
       bio: $bio
       avatar: $avatar
+      avatarKey: $avatarKey
       location: $location
       country: $country
       currency: $currency
@@ -27,6 +29,7 @@ export const UPDATE_PROFILE = gql`
       name
       bio
       avatar
+      avatarKey
       location
       country
       currency

@@ -6,7 +6,9 @@ export const CREATE_POST = gql`
   mutation CreatePost(
     $type: String
     $image: String!
+    $imageKey: String
     $images: [String]
+    $imageKeys: [String]
     $styleName: String!
     $barberName: String
     $barberShop: String
@@ -21,7 +23,9 @@ export const CREATE_POST = gql`
     createPost(
       type: $type
       image: $image
+      imageKey: $imageKey
       images: $images
+      imageKeys: $imageKeys
       styleName: $styleName
       barberName: $barberName
       barberShop: $barberShop

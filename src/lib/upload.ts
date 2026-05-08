@@ -2,7 +2,7 @@ import { getBackendBaseUrl } from './backend';
 
 const BACKEND = getBackendBaseUrl();
 
-export async function uploadFile(file: File): Promise<{ fileUrl: string; fileType: string; mediaId: string }> {
+export async function uploadFile(file: File): Promise<{ fileUrl: string; fileKey: string; fileType: string; mediaId: string }> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('hm_token') : null;
   if (!token) throw new Error('Authentication required');
 

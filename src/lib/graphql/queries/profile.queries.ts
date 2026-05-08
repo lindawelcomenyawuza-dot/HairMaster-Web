@@ -7,6 +7,7 @@ export const USER_FIELDS = gql`
     email
     accountType
     avatar
+    avatarKey
     bio
     followers
     following

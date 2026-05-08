@@ -18,6 +18,7 @@ export function ProfilePage() {
   const [editName, setEditName] = useState(user?.name || '');
   const [editBio, setEditBio] = useState(user?.bio || '');
   const [editAvatar, setEditAvatar] = useState(user?.avatar || '');
+  const [editAvatarKey, setEditAvatarKey] = useState(user?.avatarKey || '');
   const [editLocation, setEditLocation] = useState(user?.location || '');
   const [saving, setSaving] = useState(false);
 
@@ -42,6 +43,7 @@ export function ProfilePage() {
         name: editName,
         bio: editBio,
         avatar: editAvatar,
+        avatarKey: editAvatarKey,
         location: editLocation,
       });
       setShowEditProfile(false);
@@ -108,6 +110,7 @@ export function ProfilePage() {
             setEditName(user?.name || '');
             setEditBio(user?.bio || '');
             setEditAvatar(user?.avatar || '');
+            setEditAvatarKey(user?.avatarKey || '');
             setEditLocation(user?.location || '');
           }
           setShowEditProfile(open);
@@ -115,10 +118,12 @@ export function ProfilePage() {
         editName={editName}
         editBio={editBio}
         editAvatar={editAvatar}
+        editAvatarKey={editAvatarKey}
         editLocation={editLocation}
         setEditName={setEditName}
         setEditBio={setEditBio}
         setEditAvatar={setEditAvatar}
+        setEditAvatarKey={setEditAvatarKey}
         setEditLocation={setEditLocation}
         onSave={handleSaveProfile}
         saving={saving}

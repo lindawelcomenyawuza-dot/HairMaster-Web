@@ -82,9 +82,8 @@ export function CreatePostPage() {
     setUploading(true);
 
     try {
-      const uploadedImage = selectedFile
-        ? (await uploadFile(selectedFile)).fileUrl
-        : 'https://images.unsplash.com/photo-1759142016096-a9d1a5ebcc09?w=800';
+      const uploadedMedia = selectedFile ? await uploadFile(selectedFile) : null;
+      const uploadedImage = uploadedMedia?.fileUrl || 'https://images.unsplash.com/photo-1759142016096-a9d1a5ebcc09?w=800';
 
       await addPost({
         type: postType,
@@ -93,6 +92,7 @@ export function CreatePostPage() {
         userAvatar: user.avatar,
         accountType: user.accountType,
         image: uploadedImage,
+        imageKey: uploadedMedia?.fileKey,
         styleName,
         barberName,
         barberShop,

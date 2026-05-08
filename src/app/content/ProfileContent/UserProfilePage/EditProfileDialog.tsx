@@ -27,6 +27,7 @@ export function EditProfileDialog({
   setEditName,
   setEditBio,
   setEditAvatar,
+  setEditAvatarKey,
   setEditLocation,
   onSave,
   saving,
@@ -41,6 +42,7 @@ export function EditProfileDialog({
     try {
       const result = await uploadFile(file);
       setEditAvatar(result.fileUrl);
+      setEditAvatarKey(result.fileKey);
       toast.success('Profile picture uploaded');
     } catch {
       toast.error('Upload failed — paste a URL instead');

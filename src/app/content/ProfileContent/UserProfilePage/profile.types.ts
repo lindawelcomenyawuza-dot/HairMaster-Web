@@ -39,10 +39,12 @@ export interface EditProfileDialogProps {
   editName: string;
   editBio: string;
   editAvatar: string;
+  editAvatarKey: string;
   editLocation: string;
   setEditName: Dispatch<SetStateAction<string>>;
   setEditBio: Dispatch<SetStateAction<string>>;
   setEditAvatar: Dispatch<SetStateAction<string>>;
+  setEditAvatarKey: Dispatch<SetStateAction<string>>;
   setEditLocation: Dispatch<SetStateAction<string>>;
   onSave: () => void;
   saving: boolean;

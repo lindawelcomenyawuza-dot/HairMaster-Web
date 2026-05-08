@@ -29,6 +29,7 @@ export interface User {
   email: string;
   accountType: AccountType;
   avatar: string;
+  avatarKey?: string;
   bio: string;
   followers: number;
   following: number;
@@ -66,9 +67,12 @@ export interface Post {
   userId: string;
   userName: string;
   userAvatar: string;
+  userAvatarKey?: string;
   accountType: AccountType;
   image: string;
+  imageKey?: string;
   images?: string[];
+  imageKeys?: string[];
   styleName: string;
   barberName: string;
   barberId?: string;
@@ -180,7 +184,7 @@ interface AppContextType {
   loginWithGoogle: (token: string) => Promise<void>;
   register: (name: string, email: string, password: string, accountType?: string) => Promise<void>;
   logout: () => void;
-  updateProfile: (updates: { name?: string; bio?: string; avatar?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => Promise<void>;
+  updateProfile: (updates: { name?: string; bio?: string; avatar?: string; avatarKey?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => Promise<void>;
   posts: Post[];
   postsLoading: boolean;
   refetchPosts: () => void;
@@ -325,7 +329,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ query: '{ me { id name email accountType avatar bio followers following location country currency businessName isVerified verificationBadge loyaltyPoints discountTokens darkMode language posts totalSpent } }' }),
+      body: JSON.stringify({ query: '{ me { id name email accountType avatar avatarKey bio followers following location country currency businessName isVerified verificationBadge loyaltyPoints discountTokens darkMode language posts totalSpent } }' }),
     });
     const json = await res.json();
     const me = json?.data?.me;
@@ -381,7 +385,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       variables: {
         type: post.type || 'portfolio',
         image: post.image,
+        imageKey: post.imageKey,
         images: post.images,
+        imageKeys: post.imageKeys,
         styleName: post.styleName,
         barberName: post.barberName,
         barberShop: post.barberShop,

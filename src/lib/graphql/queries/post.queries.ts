@@ -7,9 +7,12 @@ export const POST_FIELDS = gql`
     userId
     userName
     userAvatar
+    userAvatarKey
     accountType
     image
+    imageKey
     images
+    imageKeys
     styleName
     barberName
     barberId
