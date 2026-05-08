@@ -1,9 +1,6 @@
-function getBackendBase() {
-  const configured = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
-  return configured.replace(/\/api\/graphql\/?$/, '').replace(/\/graphql\/?$/, '');
-}
+import { getBackendBaseUrl } from './backend';
 
-const BACKEND = getBackendBase();
+const BACKEND = getBackendBaseUrl();
 const PAYSTACK_SCRIPT_ID = 'paystack-inline-v2-script';
 
 export interface PaystackInitResult {

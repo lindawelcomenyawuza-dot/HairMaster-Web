@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const DEFAULT_BACKEND_URL = 'https://hairmaster-backend-1.onrender.com';
+
 const BACKEND_URL = process.env.NEXT_LOCAL_BACKEND_URL
-  ? `${process.env.NEXT_LOCAL_BACKEND_URL}/graphql`
-  : process.env.BACKEND_GRAPHQL_URL || 'http://localhost:8080/graphql';
+  ? `${process.env.NEXT_LOCAL_BACKEND_URL.replace(/\/$/, '')}/graphql`
+  : process.env.BACKEND_GRAPHQL_URL || `${DEFAULT_BACKEND_URL}/graphql`;
 
 async function handler(req: NextRequest) {
   const body = req.method === 'POST' ? await req.text() : undefined;

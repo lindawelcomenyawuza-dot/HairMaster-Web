@@ -18,6 +18,7 @@ import {
   REDEEM_POINTS,
   USE_TOKEN,
 } from '../../lib/graphql/mutations';
+import { getGraphqlUrl } from '../../lib/backend';
 
 export type AccountType = 'personal' | 'business';
 export type PostType = 'verified' | 'portfolio' | 'repost';
@@ -318,8 +319,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = async (token: string) => {
     localStorage.setItem('hm_token', token);
-    const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
-    const res = await fetch(`${BACKEND}/graphql`, {
+    const res = await fetch(getGraphqlUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

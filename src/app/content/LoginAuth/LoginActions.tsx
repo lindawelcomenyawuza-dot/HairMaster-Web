@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '../../components/ui/button';
+import { getBackendBaseUrl } from '../../../lib/backend';
 import type { LoginActionsProps } from './login.types';
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+const BACKEND = getBackendBaseUrl();
 
 function GoogleIcon() {
   return (

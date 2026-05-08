@@ -1,4 +1,6 @@
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+import { getBackendBaseUrl } from './backend';
+
+const BACKEND = getBackendBaseUrl();
 
 export async function uploadFile(file: File): Promise<{ fileUrl: string; fileType: string; mediaId: string }> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('hm_token') : null;
