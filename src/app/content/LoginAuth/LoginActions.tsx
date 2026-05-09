@@ -72,16 +72,7 @@ export function LoginActions(props: LoginActionsProps) {
   }
 
   return (
-    <div className="space-y-3 text-center">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleGoogleLogin}
-        className="w-full h-12 flex items-center justify-center border-gray-300 hover:bg-gray-50"
-      >
-        <GoogleIcon />
-        Continue with Google
-      </Button>
+    <div className="text-center">
       <button
         type="button"
         onClick={props.onBackToAccountType}

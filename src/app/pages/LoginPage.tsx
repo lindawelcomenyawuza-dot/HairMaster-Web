@@ -43,7 +43,7 @@ export function LoginPage() {
         <Card className="w-full max-w-md">
           <LoginHeader
             title="Hair Master"
-            description="Choose your account type to login"
+            description="Log in or create your account"
           />
           <CardContent className="space-y-4">
             <LoginActions
