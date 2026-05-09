@@ -50,6 +50,8 @@ export function CreatePostPage() {
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'unisex'>('unisex');
+  const [servicePrice, setServicePrice] = useState('');
+  const [serviceCurrency, setServiceCurrency] = useState(user?.currency || 'ZAR');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -58,6 +60,7 @@ export function CreatePostPage() {
   const isVideoPreview = selectedFile?.type.startsWith('video/');
   const salonOptions: SalonOption[] = salonData?.searchSalons || [];
   const staffOptions: StaffOption[] = staffData?.getSalonStaff || [];
+  const canPriceServices = user?.accountType === 'business';
 
   const completedBookings = bookings.filter(b => b.status === 'completed');
 
@@ -141,6 +144,12 @@ export function CreatePostPage() {
       return;
     }
 
+    const parsedPrice = canPriceServices ? Number(servicePrice || 0) : 0;
+    if (canPriceServices && servicePrice && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
+      toast.error('Enter a valid service price');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -165,7 +174,9 @@ export function CreatePostPage() {
         stylistAvatar: selectedStylist.avatar,
         salonLogo: selectedSalon.logo,
         location,
-        price: 0,
+        price: parsedPrice,
+        currency: canPriceServices ? serviceCurrency : undefined,
+        isService: canPriceServices && parsedPrice > 0,
         rating: 0,
         likes: 0,
         isLiked: false,
@@ -429,6 +440,37 @@ export function CreatePostPage() {
               </SelectContent>
             </Select>
           </div>
+
+          {canPriceServices && (
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="servicePrice">Service Price</Label>
+                <Input
+                  id="servicePrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={servicePrice}
+                  onChange={(e) => setServicePrice(e.target.value)}
+                  placeholder="e.g. 250"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="serviceCurrency">Currency</Label>
+                <Select value={serviceCurrency} onValueChange={setServiceCurrency}>
+                  <SelectTrigger id="serviceCurrency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ZAR">ZAR</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>

@@ -90,6 +90,7 @@ export interface Post {
   originalPostId?: string;
   price: number;
   currency?: string;
+  isService?: boolean;
   rating: number;
   likes: number;
   isLiked: boolean;
@@ -442,6 +443,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         location: post.location,
         price: post.price,
         currency: post.currency,
+        isService: post.isService,
         description: post.description,
         gender: post.gender,
         hashtags: post.hashtags,

@@ -28,6 +28,7 @@ export const POST_FIELDS = gql`
     originalPostId
     price
     currency
+    isService
     rating
     likes
     isLiked

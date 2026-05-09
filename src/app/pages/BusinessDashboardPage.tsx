@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Calendar, MessageSquare, CreditCard, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MessageSquare, CreditCard, Plus, AlertCircle, CheckCircle2, Scissors } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -18,7 +18,7 @@ import { StaffMember } from '../types';
 
 export function BusinessDashboardPage() {
   const router = useRouter();
-  const { user, bookings, setNavState } = useApp();
+  const { user, bookings, posts, setNavState } = useApp();
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
   const [staff, setStaff] = useState<StaffMember[]>(user?.staff || []);
@@ -58,6 +58,19 @@ export function BusinessDashboardPage() {
     }
     return sum + b.price;
   }, 0);
+  const servicePosts = posts.filter(post => (
+    (post.isService || post.price > 0) &&
+    (post.userId === user.id || post.salonId === user.id || post.salonName === user.businessName || post.barberShop === user.businessName)
+  ));
+  const catalogGroups = servicePosts.reduce<Record<string, typeof servicePosts>>((groups, post) => {
+    const groupName = post.salonName || post.barberShop || post.userName || 'Services';
+    groups[groupName] = groups[groupName] || [];
+    groups[groupName].push(post);
+    return groups;
+  }, {});
+  const getBookingCount = (postId: string, styleName: string) => (
+    bookings.filter(booking => booking.postId === postId || booking.styleName === styleName).length
+  );
 
   const handleAddStaff = () => {
     if (!newStaff.name || !newStaff.role || !newStaff.email || !newStaff.phone) {
@@ -251,10 +264,14 @@ export function BusinessDashboardPage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="bookings">
               <Calendar className="w-4 h-4 mr-2" />
               Bookings
+            </TabsTrigger>
+            <TabsTrigger value="catalog">
+              <Scissors className="w-4 h-4 mr-2" />
+              Catalog
             </TabsTrigger>
             <TabsTrigger value="staff">
               <Users className="w-4 h-4 mr-2" />
@@ -305,6 +322,69 @@ export function BusinessDashboardPage() {
                 ) : (
                   <div className="text-center py-12 text-gray-500">
                     No bookings yet
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Catalog Tab */}
+          <TabsContent value="catalog" className="mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Service Catalog</h3>
+                    <p className="text-sm text-gray-500">Priced posts customers can book</p>
+                  </div>
+                  <Button
+                    onClick={() => router.push('/create-post')}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Service
+                  </Button>
+                </div>
+
+                {servicePosts.length > 0 ? (
+                  <div className="space-y-8">
+                    {Object.entries(catalogGroups).map(([groupName, groupPosts]) => (
+                      <div key={groupName}>
+                        <h4 className="font-semibold mb-3">{groupName}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          {groupPosts.map((post) => (
+                            <div key={post.id} className="border rounded-lg overflow-hidden bg-white">
+                              <img
+                                src={post.image}
+                                alt={post.styleName}
+                                className="w-full aspect-video object-cover bg-gray-100"
+                              />
+                              <div className="p-4 space-y-2">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h5 className="font-semibold">{post.styleName}</h5>
+                                    <p className="text-sm text-gray-500">{post.stylistName || post.barberName || 'Any stylist'}</p>
+                                  </div>
+                                  <p className="font-bold text-green-600 whitespace-nowrap">
+                                    {formatCurrency(post.price, post.currency)}
+                                  </p>
+                                </div>
+                                <div className="flex items-center justify-between text-sm text-gray-500">
+                                  <span>{post.location || 'No location set'}</span>
+                                  <span>{getBookingCount(post.id, post.styleName)} bookings</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <Scissors className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                    <p>No priced services yet</p>
+                    <p className="text-sm mt-2">Create a business post with a price to add it to your catalog.</p>
                   </div>
                 )}
               </CardContent>

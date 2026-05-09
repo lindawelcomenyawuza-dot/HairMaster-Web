@@ -28,7 +28,7 @@ export const currencyByCountry: Record<string, Currency> = {
 };
 
 export function getCurrencyFromLocation(location?: string): Currency {
-  if (!location) return 'USD';
+  if (!location) return 'ZAR';
   
   for (const [region, currency] of Object.entries(currencyByCountry)) {
     if (location.toLowerCase().includes(region.toLowerCase())) {
@@ -36,19 +36,19 @@ export function getCurrencyFromLocation(location?: string): Currency {
     }
   }
   
-  return 'USD';
+  return 'ZAR';
 }
 
 function getSymbol(currency: string): string {
-  return currencySymbols[currency as Currency] ?? '$';
+  return currencySymbols[currency as Currency] ?? 'R';
 }
 
 export function formatCurrency(amount: number, currency?: string): string {
-  const symbol = getSymbol(currency ?? 'USD');
+  const symbol = getSymbol(currency ?? 'ZAR');
   return `${symbol}${amount.toFixed(2)}`;
 }
 
 export function formatCurrencySimple(amount: number, currency?: string): string {
-  const symbol = getSymbol(currency ?? 'USD');
+  const symbol = getSymbol(currency ?? 'ZAR');
   return `${symbol}${amount}`;
 }

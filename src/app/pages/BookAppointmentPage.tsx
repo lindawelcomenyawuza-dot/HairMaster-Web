@@ -13,6 +13,7 @@ import { useApp } from '../context/AppContext';
 import { mockBarberShops, mockHairstylists, timeSlots } from '../data/mockData';
 import { toast } from 'sonner';
 import type { Currency } from '../types';
+import { formatCurrency } from '../utils/currency';
 
 export function BookAppointmentPage() {
   const router = useRouter();
@@ -35,8 +36,9 @@ export function BookAppointmentPage() {
 
   const styleName = post?.styleName || styleQuery || '';
   const price = post?.price || 0;
-  const currency = post?.currency || 'USD';
+  const currency = post?.currency || 'ZAR';
   const depositAmount = depositOption === '50' ? price * 0.5 : price;
+  const formattedPrice = formatCurrency(price, currency);
 
   // Get available barbershops based on the style
   const availableShops = post
@@ -84,8 +86,8 @@ export function BookAppointmentPage() {
     const bookingData = {
       postId: post?.id || 'custom',
       styleName: styleName,
-      barberName: barberData?.name || '',
-      location: shopData?.location || '',
+      barberName: post?.stylistName || post?.barberName || barberData?.name || '',
+      location: post?.location || shopData?.location || '',
       price: price,
       currency: currency as Currency,
       date: new Date(selectedDate),
@@ -154,6 +156,15 @@ export function BookAppointmentPage() {
                       <img src={post.image} alt={post.styleName} className="w-full h-full object-cover" />
                     </div>
                   )}
+                  <div>
+                    <Label htmlFor="lockedPrice" className="text-sm text-gray-600">Service Price</Label>
+                    <Input
+                      id="lockedPrice"
+                      value={formattedPrice}
+                      readOnly
+                      className="mt-1 bg-gray-50 text-gray-700"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -355,7 +366,7 @@ export function BookAppointmentPage() {
                         <Label htmlFor="deposit50" className="flex-1 cursor-pointer">
                           <div>
                             <p className="font-semibold">Pay 50% Deposit</p>
-                            <p className="text-sm text-gray-500">Pay ${(price * 0.5).toFixed(2)} now, rest at shop</p>
+                            <p className="text-sm text-gray-500">Pay {formatCurrency(price * 0.5, currency)} now, rest at shop</p>
                           </div>
                         </Label>
                       </div>
@@ -364,7 +375,7 @@ export function BookAppointmentPage() {
                         <Label htmlFor="deposit100" className="flex-1 cursor-pointer">
                           <div>
                             <p className="font-semibold">Pay Full Amount</p>
-                            <p className="text-sm text-gray-500">Pay ${price.toFixed(2)} now</p>
+                            <p className="text-sm text-gray-500">Pay {formattedPrice} now</p>
                           </div>
                         </Label>
                       </div>
@@ -431,7 +442,7 @@ export function BookAppointmentPage() {
                   <div className="pt-3 border-t">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total</span>
-                      <span className="text-2xl font-bold text-green-600">${price}</span>
+                      <span className="text-2xl font-bold text-green-600">{formattedPrice}</span>
                     </div>
                   </div>
                 </div>
