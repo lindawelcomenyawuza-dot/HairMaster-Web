@@ -14,8 +14,10 @@ export function SignupPage() {
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,8 +27,8 @@ export function SignupPage() {
     setLoading(true);
     try {
       const displayName = accountType === 'business' ? businessName : name;
-      await register(displayName, email, password, accountType!);
-      router.push('/home');
+      await register(displayName, email, password, accountType!, phone, consentAccepted);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch (err: any) {
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
@@ -134,6 +136,17 @@ export function SignupPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -145,9 +158,21 @@ export function SignupPage() {
                 required
               />
             </div>
+            <label className="flex items-start gap-3 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={consentAccepted}
+                onChange={(e) => setConsentAccepted(e.target.checked)}
+                required
+                className="mt-1"
+              />
+              <span>
+                I accept the Hair Master terms, privacy policy, and consent to account processing.
+              </span>
+            </label>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !consentAccepted}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               {loading ? 'Creating account...' : 'Create Account'}

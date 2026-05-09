@@ -6,6 +6,9 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
+import { getRequiredPublicApiUrl } from '../../lib/api';
+
+const API_URL = getRequiredPublicApiUrl();
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -37,18 +40,27 @@ export default function ResetPassword() {
     if (!validatePassword()) return;
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || 'Could not reset password');
+      }
       setIsSuccess(true);
       toast.success('Password reset successfully!');
-      
-      // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push('/login');
       }, 2000);
-    }, 1500);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not reset password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!token) {

@@ -6,6 +6,9 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
+import { getRequiredPublicApiUrl } from '../../lib/api';
+
+const API_URL = getRequiredPublicApiUrl();
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -21,13 +24,21 @@ export default function ForgotPassword() {
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error('Could not send recovery email');
       setIsSubmitted(true);
       toast.success('Recovery email sent!');
-    }, 1500);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not send recovery email');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -45,7 +56,7 @@ export default function ForgotPassword() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-600 text-center">
-              Click the link in the email to reset your password. The link will expire in 1 hour.
+              Click the link in the email to reset your password. The link will expire in 30 minutes.
             </p>
             <Button 
               asChild

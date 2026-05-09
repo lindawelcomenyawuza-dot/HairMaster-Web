@@ -5,6 +5,7 @@ export const USER_FIELDS = gql`
     id
     name
     email
+    phone
     accountType
     avatar
     avatarKey

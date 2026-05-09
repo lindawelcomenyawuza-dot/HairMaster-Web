@@ -29,6 +29,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   accountType: AccountType;
   avatar: string;
   avatarKey?: string;
@@ -191,7 +192,7 @@ interface AppContextType {
   authLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (token: string) => Promise<void>;
-  register: (name: string, email: string, password: string, accountType?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, accountType: string | undefined, phone: string, consentAccepted: boolean) => Promise<void>;
   logout: () => void;
   updateProfile: (updates: { bio?: string; avatar?: string; avatarKey?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => Promise<void>;
   posts: Post[];
@@ -388,13 +389,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string, accountType?: string) => {
-    const { data } = await registerMutation({ variables: { name, email, password, accountType } });
+  const register = async (name: string, email: string, password: string, accountType: string | undefined, phone: string, consentAccepted: boolean) => {
+    const { data } = await registerMutation({ variables: { name, email, password, accountType, phone, consentAccepted } });
     const d = data as any;
     if (d?.register) {
-      localStorage.setItem('hm_token', d.register.token);
-      sessionStorage.setItem('hm_token', d.register.token);
-      setUser(d.register.user);
+      if (d.register.token) {
+        localStorage.setItem('hm_token', d.register.token);
+        sessionStorage.setItem('hm_token', d.register.token);
+        setUser(d.register.user);
+      }
     }
   };
 
