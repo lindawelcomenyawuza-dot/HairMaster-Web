@@ -15,11 +15,9 @@ export function ProfilePage() {
   const router = useRouter();
   const { user, logout, updateProfile, posts, bookings } = useApp();
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editName, setEditName] = useState(user?.name || '');
   const [editBio, setEditBio] = useState(user?.bio || '');
   const [editAvatar, setEditAvatar] = useState(user?.avatar || '');
   const [editAvatarKey, setEditAvatarKey] = useState(user?.avatarKey || '');
-  const [editLocation, setEditLocation] = useState(user?.location || '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,11 +38,9 @@ export function ProfilePage() {
     setSaving(true);
     try {
       await updateProfile({
-        name: editName,
         bio: editBio,
         avatar: editAvatar,
         avatarKey: editAvatarKey,
-        location: editLocation,
       });
       setShowEditProfile(false);
     } catch (err: any) {
@@ -107,24 +103,19 @@ export function ProfilePage() {
         open={showEditProfile}
         onOpenChange={(open) => {
           if (open) {
-            setEditName(user?.name || '');
             setEditBio(user?.bio || '');
             setEditAvatar(user?.avatar || '');
             setEditAvatarKey(user?.avatarKey || '');
-            setEditLocation(user?.location || '');
           }
           setShowEditProfile(open);
         }}
-        editName={editName}
+        displayName={user.name}
         editBio={editBio}
         editAvatar={editAvatar}
         editAvatarKey={editAvatarKey}
-        editLocation={editLocation}
-        setEditName={setEditName}
         setEditBio={setEditBio}
         setEditAvatar={setEditAvatar}
         setEditAvatarKey={setEditAvatarKey}
-        setEditLocation={setEditLocation}
         onSave={handleSaveProfile}
         saving={saving}
       />

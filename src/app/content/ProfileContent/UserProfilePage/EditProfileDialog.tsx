@@ -20,15 +20,12 @@ import type { EditProfileDialogProps } from './profile.types';
 export function EditProfileDialog({
   open,
   onOpenChange,
-  editName,
+  displayName,
   editBio,
   editAvatar,
-  editLocation,
-  setEditName,
   setEditBio,
   setEditAvatar,
   setEditAvatarKey,
-  setEditLocation,
   onSave,
   saving,
 }: EditProfileDialogProps) {
@@ -60,22 +57,10 @@ export function EditProfileDialog({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="editName">Name</Label>
-            <Input
-              id="editName"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              placeholder="Your name"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="editLocation">Location</Label>
-            <Input
-              id="editLocation"
-              value={editLocation}
-              onChange={(e) => setEditLocation(e.target.value)}
-              placeholder="e.g. New York, NY"
-            />
+            <Label>Name</Label>
+            <p className="rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {displayName}
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>

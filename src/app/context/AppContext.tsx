@@ -192,7 +192,7 @@ interface AppContextType {
   loginWithGoogle: (token: string) => Promise<void>;
   register: (name: string, email: string, password: string, accountType?: string) => Promise<void>;
   logout: () => void;
-  updateProfile: (updates: { name?: string; bio?: string; avatar?: string; avatarKey?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => Promise<void>;
+  updateProfile: (updates: { bio?: string; avatar?: string; avatarKey?: string; location?: string; country?: string; currency?: string; businessName?: string; darkMode?: boolean; language?: string }) => Promise<void>;
   posts: Post[];
   postsLoading: boolean;
   refetchPosts: () => void;
