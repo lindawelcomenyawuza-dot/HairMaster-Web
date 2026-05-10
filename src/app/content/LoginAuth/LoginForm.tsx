@@ -3,6 +3,7 @@
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import Link from 'next/link';
 import type { LoginFormProps } from './login.types';
 
 export function LoginForm({
@@ -34,7 +35,12 @@ export function LoginForm({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor="password">Password</Label>
+          <Link href="/forgot-password" className="text-sm text-purple-600 hover:underline">
+            Forgot Password?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"

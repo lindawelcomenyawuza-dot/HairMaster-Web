@@ -46,6 +46,8 @@ export function usePayment() {
           amount: paymentDetails.amount,
           currency: paymentDetails.currency as string,
           email: user.email,
+          type: paymentDetails.type,
+          subscriptionPlan: paymentDetails.type === 'subscription' ? 'monthly' : undefined,
         });
 
         if (!accessCode && authorizationUrl) {

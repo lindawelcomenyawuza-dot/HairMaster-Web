@@ -23,6 +23,8 @@ export async function initiatePayment(params: {
   amount: number;
   currency?: string;
   email?: string;
+  type?: 'booking' | 'subscription';
+  subscriptionPlan?: string;
 }): Promise<PaystackInitResult> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('hm_token') : null;
   if (!token) throw new Error('Authentication required');

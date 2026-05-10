@@ -4,6 +4,7 @@ import { AppProvider } from '../src/app/context/AppContext';
 import { Toaster } from '../src/app/components/ui/sonner';
 import ApolloClientProvider from '../src/app/components/ApolloProvider';
 import { VerificationGate } from '../src/app/components/VerificationGate';
+import { BottomNavigation } from '../src/app/components/BottomNavigation';
 
 export const metadata: Metadata = {
   title: 'Hair Master',
@@ -21,6 +22,7 @@ export default function RootLayout({
         <ApolloClientProvider>
           <AppProvider>
             <VerificationGate>{children}</VerificationGate>
+            <BottomNavigation />
             <Toaster />
           </AppProvider>
         </ApolloClientProvider>

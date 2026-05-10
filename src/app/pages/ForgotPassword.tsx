@@ -31,9 +31,12 @@ export default function ForgotPassword() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      if (!res.ok) throw new Error('Could not send recovery email');
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Could not send recovery email');
+      }
       setIsSubmitted(true);
-      toast.success('Recovery email sent!');
+      toast.success('Password reset instructions sent');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not send recovery email');
     } finally {
@@ -51,7 +54,7 @@ export default function ForgotPassword() {
             </div>
             <CardTitle>Check Your Email</CardTitle>
             <CardDescription>
-              We've sent a password recovery link to <strong>{email}</strong>
+              Password reset instructions sent
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -87,7 +90,7 @@ export default function ForgotPassword() {
           </Link>
           <CardTitle className="text-2xl">Forgot Password?</CardTitle>
           <CardDescription>
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a code to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,7 +118,7 @@ export default function ForgotPassword() {
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               disabled={isLoading}
             >
-              {isLoading ? 'Sending...' : 'Send Recovery Email'}
+              {isLoading ? 'Sending...' : 'Send Code'}
             </Button>
           </form>
         </CardContent>

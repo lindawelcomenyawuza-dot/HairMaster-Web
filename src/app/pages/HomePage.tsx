@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '../context/AppContext';
-import { BottomNavigation } from '../content/HomeContent/BottomNavigation';
 import { CreatePostButton } from '../content/HomeContent/CreatePostButton';
 import { HomeHeader } from '../content/HomeContent/HomeHeader';
 import { HomeSearchFilters } from '../content/HomeContent/HomeSearchFilters';
@@ -100,15 +99,6 @@ export function HomePage() {
         onSetMediumPrice={() => { setPriceFilter('medium'); setShowPriceFilter(false); }}
         onSetHighPrice={() => { setPriceFilter('high'); setShowPriceFilter(false); }}
         onResetPrices={() => { setPriceFilter('all'); setPriceRange([0, 500]); setShowPriceFilter(false); }}
-      />
-
-      <BottomNavigation
-        onNavigateToHome={() => router.push('/home')}
-        onNavigateToHairstyles={() => router.push('/hairstyles')}
-        onNavigateToBookings={() => router.push('/bookings')}
-        onNavigateToOrders={() => router.push('/orders')}
-        onNavigateToChat={() => router.push('/chat')}
-        onNavigateToSettings={() => router.push('/settings')}
       />
     </div>
   );
