@@ -21,7 +21,7 @@ export function VerificationGate({ children }: { children: React.ReactNode }) {
   const { user, authLoading } = useApp();
 
   useEffect(() => {
-    if (authLoading || !user || user.isVerified !== false) return;
+    if (authLoading || !user || user.authProvider === 'google' || user.isVerified !== false) return;
     const isPublic = PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
     if (!isPublic) {
       router.replace(`/verify-email?email=${encodeURIComponent(user.email)}`);

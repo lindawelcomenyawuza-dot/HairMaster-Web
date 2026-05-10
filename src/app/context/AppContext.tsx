@@ -41,6 +41,7 @@ export interface User {
   currency?: string;
   businessName?: string;
   isVerified?: boolean;
+  authProvider?: 'email' | 'google';
   verificationBadge?: 'verified' | 'business' | 'pro';
   subscription?: {
     isActive: boolean;

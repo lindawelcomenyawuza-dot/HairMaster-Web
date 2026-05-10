@@ -17,6 +17,7 @@ export const USER_FIELDS = gql`
     currency
     businessName
     isVerified
+    authProvider
     verificationBadge
     savedPosts
     referralCode

@@ -46,6 +46,7 @@ export interface User {
   businessName?: string;
   isFollowing?: boolean;
   isVerified?: boolean;
+  authProvider?: 'email' | 'google';
   verificationBadge?: 'verified' | 'business' | 'pro';
   subscription?: Subscription;
   documents?: Documents;
