@@ -1,19 +1,18 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useMutation } from '@apollo/client/react';
 import { ArrowLeft, Mail, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
-import { getRequiredPublicApiUrl } from '../../lib/api';
-
-const API_URL = getRequiredPublicApiUrl();
+import { FORGOT_PASSWORD } from '../../lib/graphql/mutations/auth.mutations';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [forgotPassword, { loading: isLoading }] = useMutation(FORGOT_PASSWORD);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,24 +22,14 @@ export default function ForgotPassword() {
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      const res = await fetch(`${API_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      await forgotPassword({
+        variables: { email },
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Could not send recovery email');
-      }
       setIsSubmitted(true);
       toast.success('Password reset instructions sent');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not send recovery email');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -59,7 +48,7 @@ export default function ForgotPassword() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-600 text-center">
-              Click the link in the email to reset your password. The link will expire in 30 minutes.
+              Click the link in the email to reset your password. The link will expire in 1 hour.
             </p>
             <Button 
               asChild
@@ -90,7 +79,7 @@ export default function ForgotPassword() {
           </Link>
           <CardTitle className="text-2xl">Forgot Password?</CardTitle>
           <CardDescription>
-            Enter your email address and we'll send you a code to reset your password.
+            Enter your email address and we'll send you a secure link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,7 +107,7 @@ export default function ForgotPassword() {
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               disabled={isLoading}
             >
-              {isLoading ? 'Sending...' : 'Send Code'}
+              {isLoading ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </form>
         </CardContent>

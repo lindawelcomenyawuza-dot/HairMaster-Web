@@ -1,14 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useMutation } from '@apollo/client/react';
 import { Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
-import { getRequiredPublicApiUrl } from '../../lib/api';
-
-const API_URL = getRequiredPublicApiUrl();
+import { RESET_PASSWORD } from '../../lib/graphql/mutations/auth.mutations';
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -19,8 +18,8 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [resetPassword, { loading: isLoading }] = useMutation(RESET_PASSWORD);
 
   const validatePassword = () => {
     if (password.length < 8) {
@@ -39,18 +38,13 @@ export default function ResetPassword() {
     
     if (!validatePassword()) return;
 
-    setIsLoading(true);
-
     try {
-      const res = await fetch(`${API_URL}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
+      await resetPassword({
+        variables: {
+          token,
+          newPassword: password,
+        },
       });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || 'Could not reset password');
-      }
       setIsSuccess(true);
       toast.success('Password reset successfully!');
       setTimeout(() => {
@@ -58,8 +52,6 @@ export default function ResetPassword() {
       }, 2000);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not reset password');
-    } finally {
-      setIsLoading(false);
     }
   };
 
