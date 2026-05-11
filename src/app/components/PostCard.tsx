@@ -319,7 +319,7 @@ export function PostCard({ post }: PostCardProps) {
             <div className="pt-2 border-t">
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span className="text-green-600">${post.price}</span>
+                <span className="text-green-600">{post.price}</span>
               </div>
             </div>
             <Button
