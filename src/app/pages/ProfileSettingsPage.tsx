@@ -20,10 +20,12 @@ export default function ProfileSettingsPage() {
   const [updateProfileSettings] = useMutation(UPDATE_PROFILE_SETTINGS);
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [businessName, setBusinessName] = useState(user?.businessName || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [avatarKey, setAvatarKey] = useState(user?.avatarKey || '');
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState('');
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -32,44 +34,70 @@ export default function ProfileSettingsPage() {
     }
     setName(user.name || '');
     setBio(user.bio || '');
+    setBusinessName(user.businessName || '');
     setAvatar(user.avatar || '');
     setAvatarKey(user.avatarKey || '');
+    setSelectedAvatarFile(null);
+    setAvatarPreviewUrl('');
   }, [router, user]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    };
+  }, [avatarPreviewUrl]);
 
   if (!user) return null;
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const result = await uploadFile(file);
-      setAvatar(result.fileUrl);
-      setAvatarKey(result.fileKey);
-      toast.success('Profile picture uploaded');
-    } catch {
-      toast.error('Upload failed - paste a URL instead');
-    } finally {
-      setUploading(false);
-    }
+    if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    setAvatarPreviewUrl(URL.createObjectURL(file));
+    setSelectedAvatarFile(file);
+    setAvatarKey('');
+  };
+
+  const handleAvatarUrlChange = (value: string) => {
+    if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    setAvatarPreviewUrl('');
+    setSelectedAvatarFile(null);
+    setAvatar(value);
+    setAvatarKey('');
   };
 
   const handleSave = async () => {
+    if (saving) return;
+
     setSaving(true);
     try {
+      let nextAvatar = avatar;
+      let nextAvatarKey = avatarKey;
+
+      if (selectedAvatarFile) {
+        const uploadedAvatar = await uploadFile(selectedAvatarFile);
+        nextAvatar = uploadedAvatar.fileUrl;
+        nextAvatarKey = uploadedAvatar.fileKey;
+      }
+
       const { data } = await updateProfileSettings({
         variables: {
           name: name.trim(),
           bio,
-          avatar,
-          avatarKey,
+          businessName: user.accountType === 'business' ? businessName.trim() : undefined,
+          avatar: nextAvatar,
+          avatarKey: nextAvatarKey,
         },
       });
       const result = data as any;
       if (result?.updateProfileSettings) {
         setUser({ ...user, ...result.updateProfileSettings });
       }
+      setAvatar(nextAvatar);
+      setAvatarKey(nextAvatarKey);
+      setSelectedAvatarFile(null);
+      setAvatarPreviewUrl('');
       toast.success('Profile settings saved');
       router.push('/settings');
     } catch (error) {
@@ -78,6 +106,8 @@ export default function ProfileSettingsPage() {
       setSaving(false);
     }
   };
+
+  const displayAvatar = avatarPreviewUrl || avatar;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -123,19 +153,32 @@ export default function ProfileSettingsPage() {
               />
             </div>
 
+            {user.accountType === 'business' && (
+              <div className="space-y-2">
+                <Label htmlFor="settingsBusinessName">Business Name</Label>
+                <Input
+                  id="settingsBusinessName"
+                  value={businessName}
+                  onChange={(event) => setBusinessName(event.target.value)}
+                  placeholder="Your business name"
+                  disabled={saving}
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Profile Picture</Label>
               <div className="flex items-center gap-3">
-                {avatar && (
+                {displayAvatar && (
                   <img
-                    src={avatar}
+                    src={displayAvatar}
                     alt="Preview"
                     className="w-16 h-16 rounded-full object-cover bg-gray-200 flex-shrink-0"
                   />
                 )}
                 <div className="flex-1 space-y-2">
                   <label className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-600">
-                    {uploading ? (
+                    {saving && selectedAvatarFile ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
                     ) : (
                       <><Upload className="w-4 h-4" /> Upload photo</>
@@ -143,34 +186,32 @@ export default function ProfileSettingsPage() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleAvatarUpload}
+                      onChange={handleAvatarSelect}
                       className="hidden"
-                      disabled={uploading}
+                      disabled={saving}
                     />
                   </label>
                   <Input
                     value={avatar}
-                    onChange={(event) => {
-                      setAvatar(event.target.value);
-                      setAvatarKey('');
-                    }}
+                    onChange={(event) => handleAvatarUrlChange(event.target.value)}
                     placeholder="Or paste an image URL"
+                    disabled={saving}
                   />
                 </div>
               </div>
-              {avatar && !uploading && (
+              {displayAvatar && !saving && (
                 <p className="text-xs text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Profile picture set
+                  <CheckCircle2 className="w-3 h-3" /> {selectedAvatarFile ? 'Profile picture ready to save' : 'Profile picture set'}
                 </p>
               )}
             </div>
 
             <Button
               onClick={handleSave}
-              disabled={saving || uploading}
+              disabled={saving}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
-              {saving ? 'Saving...' : 'Save Profile Settings'}
+              {saving ? (selectedAvatarFile ? 'Uploading photo...' : 'Saving...') : 'Save Profile Settings'}
             </Button>
           </CardContent>
         </Card>

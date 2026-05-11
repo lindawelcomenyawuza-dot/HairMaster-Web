@@ -40,9 +40,11 @@ export interface EditProfileDialogProps {
   editBio: string;
   editAvatar: string;
   editAvatarKey: string;
+  pendingAvatarFile: File | null;
   setEditBio: Dispatch<SetStateAction<string>>;
   setEditAvatar: Dispatch<SetStateAction<string>>;
   setEditAvatarKey: Dispatch<SetStateAction<string>>;
+  setPendingAvatarFile: Dispatch<SetStateAction<File | null>>;
   onSave: () => void;
   saving: boolean;
 }

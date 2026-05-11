@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import { useApp } from '../context/AppContext';
 import { EditProfileDialog } from '../content/ProfileContent/UserProfilePage/EditProfileDialog';
@@ -10,6 +11,7 @@ import { ProfileInfo } from '../content/ProfileContent/UserProfilePage/ProfileIn
 import { ProfilePosts } from '../content/ProfileContent/UserProfilePage/ProfilePosts';
 import { ProfileStats } from '../content/ProfileContent/UserProfilePage/ProfileStats';
 import { VerificationBanner } from '../content/ProfileContent/UserProfilePage/VerificationBanner';
+import { uploadFile } from '../../lib/upload';
 
 export function ProfilePage() {
   const router = useRouter();
@@ -18,6 +20,7 @@ export function ProfilePage() {
   const [editBio, setEditBio] = useState(user?.bio || '');
   const [editAvatar, setEditAvatar] = useState(user?.avatar || '');
   const [editAvatarKey, setEditAvatarKey] = useState(user?.avatarKey || '');
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -35,16 +38,32 @@ export function ProfilePage() {
   const totalSpent = completedBookings.reduce((sum, b) => sum + b.price, 0);
 
   const handleSaveProfile = async () => {
+    if (saving) return;
+
     setSaving(true);
     try {
+      let nextAvatar = editAvatar;
+      let nextAvatarKey = editAvatarKey;
+
+      if (pendingAvatarFile) {
+        const uploadedAvatar = await uploadFile(pendingAvatarFile);
+        nextAvatar = uploadedAvatar.fileUrl;
+        nextAvatarKey = uploadedAvatar.fileKey;
+      }
+
       await updateProfile({
         bio: editBio,
-        avatar: editAvatar,
-        avatarKey: editAvatarKey,
+        avatar: nextAvatar,
+        avatarKey: nextAvatarKey,
       });
+      setEditAvatar(nextAvatar);
+      setEditAvatarKey(nextAvatarKey);
+      setPendingAvatarFile(null);
       setShowEditProfile(false);
+      toast.success('Profile saved');
     } catch (err: any) {
       console.error('Failed to save profile:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to save profile');
     } finally {
       setSaving(false);
     }
@@ -106,6 +125,7 @@ export function ProfilePage() {
             setEditBio(user?.bio || '');
             setEditAvatar(user?.avatar || '');
             setEditAvatarKey(user?.avatarKey || '');
+            setPendingAvatarFile(null);
           }
           setShowEditProfile(open);
         }}
@@ -113,9 +133,11 @@ export function ProfilePage() {
         editBio={editBio}
         editAvatar={editAvatar}
         editAvatarKey={editAvatarKey}
+        pendingAvatarFile={pendingAvatarFile}
         setEditBio={setEditBio}
         setEditAvatar={setEditAvatar}
         setEditAvatarKey={setEditAvatarKey}
+        setPendingAvatarFile={setPendingAvatarFile}
         onSave={handleSaveProfile}
         saving={saving}
       />

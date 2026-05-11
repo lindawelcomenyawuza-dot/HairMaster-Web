@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,8 +13,6 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
 import { Loader2, Upload, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { uploadFile } from '../../../../lib/upload';
 import type { EditProfileDialogProps } from './profile.types';
 
 export function EditProfileDialog({
@@ -23,30 +21,48 @@ export function EditProfileDialog({
   displayName,
   editBio,
   editAvatar,
+  pendingAvatarFile,
   setEditBio,
   setEditAvatar,
   setEditAvatarKey,
+  setPendingAvatarFile,
   onSave,
   saving,
 }: EditProfileDialogProps) {
-  const [uploading, setUploading] = useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState('');
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (!open) {
+      setAvatarPreviewUrl('');
+      setPendingAvatarFile(null);
+    }
+  }, [open, setPendingAvatarFile]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    };
+  }, [avatarPreviewUrl]);
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const result = await uploadFile(file);
-      setEditAvatar(result.fileUrl);
-      setEditAvatarKey(result.fileKey);
-      toast.success('Profile picture uploaded');
-    } catch {
-      toast.error('Upload failed — paste a URL instead');
-    } finally {
-      setUploading(false);
-    }
+    if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    setAvatarPreviewUrl(URL.createObjectURL(file));
+    setPendingAvatarFile(file);
+    setEditAvatarKey('');
   };
+
+  const handleAvatarUrlChange = (value: string) => {
+    if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    setAvatarPreviewUrl('');
+    setPendingAvatarFile(null);
+    setEditAvatar(value);
+    setEditAvatarKey('');
+  };
+
+  const displayAvatar = avatarPreviewUrl || editAvatar;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,48 +91,49 @@ export function EditProfileDialog({
           <div className="space-y-2">
             <Label>Profile Picture</Label>
             <div className="flex items-center gap-3">
-              {editAvatar && (
+              {displayAvatar && (
                 <img
-                  src={editAvatar}
+                  src={displayAvatar}
                   alt="Preview"
                   className="w-14 h-14 rounded-full object-cover bg-gray-200 flex-shrink-0"
                 />
               )}
               <div className="flex-1 space-y-2">
                 <label className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-600">
-                  {uploading ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</>
+                  {saving && pendingAvatarFile ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
                   ) : (
                     <><Upload className="w-4 h-4" /> Upload photo</>
                   )}
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarSelect}
                     className="hidden"
-                    disabled={uploading}
+                    disabled={saving}
                   />
                 </label>
                 <Input
                   value={editAvatar}
-                  onChange={(e) => setEditAvatar(e.target.value)}
+                  onChange={(e) => handleAvatarUrlChange(e.target.value)}
                   placeholder="Or paste an image URL"
                   className="text-sm"
+                  disabled={saving}
                 />
               </div>
             </div>
-            {editAvatar && !uploading && (
+            {displayAvatar && !saving && (
               <p className="text-xs text-green-600 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Profile picture set
+                <CheckCircle2 className="w-3 h-3" /> {pendingAvatarFile ? 'Profile picture ready to save' : 'Profile picture set'}
               </p>
             )}
           </div>
           <Button
             onClick={onSave}
-            disabled={saving || uploading}
+            disabled={saving}
             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? (pendingAvatarFile ? 'Uploading photo...' : 'Saving...') : 'Save Changes'}
           </Button>
         </div>
       </DialogContent>
