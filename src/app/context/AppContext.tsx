@@ -87,6 +87,8 @@ export interface Post {
   stylistId?: string;
   stylistName?: string;
   stylistAvatar?: string;
+  stylistRole?: string;
+  stylistBio?: string;
   salonLogo?: string;
   location: string;
   bookingId?: string;

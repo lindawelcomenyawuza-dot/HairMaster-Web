@@ -204,6 +204,27 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
 
+          {post.type !== 'repost' && post.stylistName && (
+            <div className="flex items-center gap-3 rounded-lg border bg-gray-50 p-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={post.stylistAvatar} />
+                <AvatarFallback>{getInitial(post.stylistName)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Styled by
+                </p>
+                <p className="text-sm font-semibold truncate">{post.stylistName}</p>
+                {post.stylistRole && (
+                  <p className="text-xs text-gray-500 truncate">{post.stylistRole}</p>
+                )}
+                {post.stylistBio && (
+                  <p className="text-xs text-gray-600 line-clamp-2 mt-1">{post.stylistBio}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1">
             {post.barberShop && (
               <div className="flex items-center gap-2 text-sm text-gray-600">

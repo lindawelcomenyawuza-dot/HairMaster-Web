@@ -22,6 +22,8 @@ export const POST_FIELDS = gql`
     stylistId
     stylistName
     stylistAvatar
+    stylistRole
+    stylistBio
     salonLogo
     location
     bookingId

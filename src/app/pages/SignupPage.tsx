@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useApp, AccountType } from '../context/AppContext';
-import { Scissors } from 'lucide-react';
+import { Eye, EyeOff, Scissors } from 'lucide-react';
 
 export function SignupPage() {
   const router = useRouter();
@@ -16,6 +16,9 @@ export function SignupPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [businessName, setBusinessName] = useState('');
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [error, setError] = useState('');
@@ -24,6 +27,10 @@ export function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
     setLoading(true);
     try {
       const displayName = accountType === 'business' ? businessName : name;
@@ -148,15 +155,56 @@ export function SignupPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a password (min 6 chars)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={6}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password (min 6 chars)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowPassword(value => !value)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Enter password again"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  minLength={6}
+                  required
+                  aria-invalid={Boolean(confirmPassword && password !== confirmPassword)}
+                  aria-describedby="confirmPassword-error"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  onClick={() => setShowConfirmPassword(value => !value)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p id="confirmPassword-error" className="text-sm text-red-600">
+                  Passwords do not match
+                </p>
+              )}
             </div>
             <label className="flex items-start gap-3 text-sm text-gray-600">
               <input
@@ -172,7 +220,7 @@ export function SignupPage() {
             </label>
             <Button
               type="submit"
-              disabled={loading || !consentAccepted}
+              disabled={loading || !consentAccepted || password !== confirmPassword}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               {loading ? 'Creating account...' : 'Create Account'}

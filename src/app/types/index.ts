@@ -61,12 +61,24 @@ export interface User {
 
 export interface StaffMember {
   id: string;
-  name: string;
+  businessId?: string;
+  name?: string;
+  fullName?: string;
+  displayName?: string;
   role: string;
   email: string;
   phone: string;
-  avatar: string;
+  avatar?: string;
+  profileImage?: string;
+  profileImageKey?: string;
+  bio?: string;
   specialties: string[];
+  socialLinks?: {
+    instagram?: string;
+    tiktok?: string;
+    website?: string;
+  };
+  createdAt?: string;
 }
 
 export interface Post {
@@ -87,6 +99,8 @@ export interface Post {
   stylistId?: string;
   stylistName?: string;
   stylistAvatar?: string;
+  stylistRole?: string;
+  stylistBio?: string;
   salonLogo?: string;
   location: string;
   bookingId?: string;

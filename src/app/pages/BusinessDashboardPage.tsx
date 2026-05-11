@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Calendar, MessageSquare, CreditCard, Plus, AlertCircle, CheckCircle2, Scissors } from 'lucide-react';
+import { useMutation, useQuery } from '@apollo/client/react';
+import { ArrowLeft, Users, Calendar, MessageSquare, CreditCard, Plus, AlertCircle, CheckCircle2, Scissors, Edit2, Trash2, Upload, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -9,26 +10,48 @@ import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Textarea } from '../components/ui/textarea';
 import { useApp } from '../context/AppContext';
 import { formatCurrency } from '../utils/currency';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { StaffMember } from '../types';
+import { uploadFile } from '../../lib/upload';
+import { GET_BUSINESS_STAFF } from '../../lib/graphql/queries';
+import { CREATE_STAFF, DELETE_STAFF, UPDATE_STAFF } from '../../lib/graphql/mutations';
+
+const emptyStaffForm = {
+  fullName: '',
+  role: '',
+  bio: '',
+  email: '',
+  phone: '',
+  specialties: '',
+  instagram: '',
+  tiktok: '',
+  website: '',
+  profileImage: '',
+  profileImageKey: '',
+};
 
 export function BusinessDashboardPage() {
   const router = useRouter();
   const { user, bookings, posts, setNavState } = useApp();
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
-  const [staff, setStaff] = useState<StaffMember[]>(user?.staff || []);
-  const [newStaff, setNewStaff] = useState({
-    name: '',
-    role: '',
-    email: '',
-    phone: '',
-    specialties: '',
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [staffForm, setStaffForm] = useState(emptyStaffForm);
+  const [staffImageFile, setStaffImageFile] = useState<File | null>(null);
+  const [staffImagePreview, setStaffImagePreview] = useState('');
+  const [savingStaff, setSavingStaff] = useState(false);
+  const { data: staffData, loading: staffLoading } = useQuery<{ getBusinessStaff: StaffMember[] }>(GET_BUSINESS_STAFF, {
+    variables: { businessId: user?.id },
+    skip: !user || user.accountType !== 'business',
   });
+  const [createStaff] = useMutation(CREATE_STAFF);
+  const [updateStaff] = useMutation(UPDATE_STAFF);
+  const [deleteStaff] = useMutation(DELETE_STAFF);
+  const staff = staffData?.getBusinessStaff || [];
 
   useEffect(() => {
     if (!user || user.accountType !== 'business') {
@@ -72,26 +95,140 @@ export function BusinessDashboardPage() {
     bookings.filter(booking => booking.postId === postId || booking.styleName === styleName).length
   );
 
-  const handleAddStaff = () => {
-    if (!newStaff.name || !newStaff.role || !newStaff.email || !newStaff.phone) {
-      toast.error('Please fill in all required fields');
+  const resetStaffDialog = () => {
+    if (staffImagePreview) URL.revokeObjectURL(staffImagePreview);
+    setEditingStaff(null);
+    setStaffForm(emptyStaffForm);
+    setStaffImageFile(null);
+    setStaffImagePreview('');
+  };
+
+  const openStaffDialog = (member?: StaffMember) => {
+    resetStaffDialog();
+    if (member) {
+      setEditingStaff(member);
+      setStaffForm({
+        fullName: member.fullName || member.displayName || member.name || '',
+        role: member.role || '',
+        bio: member.bio || '',
+        email: member.email || '',
+        phone: member.phone || '',
+        specialties: (member.specialties || []).join(', '),
+        instagram: member.socialLinks?.instagram || '',
+        tiktok: member.socialLinks?.tiktok || '',
+        website: member.socialLinks?.website || '',
+        profileImage: member.profileImage || member.avatar || '',
+        profileImageKey: member.profileImageKey || '',
+      });
+    }
+    setShowAddStaff(true);
+  };
+
+  const handleStaffImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (staffImagePreview) URL.revokeObjectURL(staffImagePreview);
+    setStaffImageFile(file);
+    setStaffImagePreview(URL.createObjectURL(file));
+    event.target.value = '';
+  };
+
+  const handleSaveStaff = async () => {
+    if (!staffForm.fullName.trim() || !staffForm.role.trim()) {
+      toast.error('Full name and role are required');
       return;
     }
 
-    const staffMember: StaffMember = {
-      id: Date.now().toString(),
-      name: newStaff.name,
-      role: newStaff.role,
-      email: newStaff.email,
-      phone: newStaff.phone,
-      avatar: `https://images.unsplash.com/photo-${Math.random() > 0.5 ? '1599566150163' : '1507003211169'}-29194dcaad36?w=150`,
-      specialties: newStaff.specialties.split(',').map(s => s.trim()).filter(Boolean),
-    };
+    setSavingStaff(true);
+    try {
+      let profileImage = staffForm.profileImage;
+      let profileImageKey = staffForm.profileImageKey;
 
-    setStaff([...staff, staffMember]);
-    setShowAddStaff(false);
-    setNewStaff({ name: '', role: '', email: '', phone: '', specialties: '' });
-    toast.success('Staff member added successfully!');
+      if (staffImageFile) {
+        const uploaded = await uploadFile(staffImageFile);
+        profileImage = uploaded.fileUrl;
+        profileImageKey = uploaded.fileKey;
+      }
+
+      const input = {
+        fullName: staffForm.fullName.trim(),
+        role: staffForm.role.trim(),
+        bio: staffForm.bio.trim(),
+        email: staffForm.email.trim(),
+        phone: staffForm.phone.trim(),
+        specialties: staffForm.specialties.split(',').map(item => item.trim()).filter(Boolean),
+        profileImage,
+        profileImageKey,
+        socialLinks: {
+          instagram: staffForm.instagram.trim(),
+          tiktok: staffForm.tiktok.trim(),
+          website: staffForm.website.trim(),
+        },
+      };
+
+      if (editingStaff) {
+        await updateStaff({
+          variables: { id: editingStaff.id, input },
+          refetchQueries: ['GetBusinessStaff', 'GetSalonStaff'],
+        });
+        toast.success('Staff member updated');
+      } else {
+        await createStaff({
+          variables: { input },
+          optimisticResponse: {
+            createStaff: {
+              __typename: 'BusinessStaffMember',
+              id: `temp-${Date.now()}`,
+              businessId: user.id,
+              displayName: input.fullName,
+              fullName: input.fullName,
+              role: input.role,
+              bio: input.bio,
+              email: input.email,
+              phone: input.phone,
+              specialties: input.specialties,
+              profileImage,
+              profileImageKey,
+              avatar: profileImage,
+              createdAt: new Date().toISOString(),
+              socialLinks: input.socialLinks,
+            },
+          },
+          refetchQueries: ['GetBusinessStaff', 'GetSalonStaff'],
+        });
+        toast.success('Staff member added');
+      }
+
+      setShowAddStaff(false);
+      resetStaffDialog();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not save staff member');
+    } finally {
+      setSavingStaff(false);
+    }
+  };
+
+  const handleDeleteStaff = async (member: StaffMember) => {
+    if (!window.confirm(`Delete ${member.fullName || member.displayName || member.name}?`)) return;
+    try {
+      await deleteStaff({
+        variables: { id: member.id },
+        optimisticResponse: { deleteStaff: true },
+        update: (cache) => {
+          cache.modify({
+            fields: {
+              getBusinessStaff(existingRefs = [], { readField }) {
+                return existingRefs.filter((ref: any) => readField('id', ref) !== member.id);
+              },
+            },
+          });
+        },
+        refetchQueries: ['GetBusinessStaff', 'GetSalonStaff'],
+      });
+      toast.success('Staff member deleted');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete staff member');
+    }
   };
 
   const handleSubscriptionPayment = () => {
@@ -398,7 +535,7 @@ export function BusinessDashboardPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold">Manage Staff</h3>
                   <Button
-                    onClick={() => setShowAddStaff(true)}
+                    onClick={() => openStaffDialog()}
                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -406,27 +543,43 @@ export function BusinessDashboardPage() {
                   </Button>
                 </div>
 
-                {staff.length > 0 ? (
+                {staffLoading ? (
+                  <div className="flex items-center justify-center py-12 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    Loading staff...
+                  </div>
+                ) : staff.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {staff.map((member) => (
                       <Card key={member.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <img
-                              src={member.avatar || undefined}
-                              alt={member.name}
-                              className="w-12 h-12 rounded-full object-cover"
+                              src={member.profileImage || member.avatar || undefined}
+                              alt={member.fullName || member.displayName || member.name || 'Staff member'}
+                              className="w-12 h-12 rounded-full bg-gray-100 object-cover"
                             />
                             <div className="flex-1">
-                              <h4 className="font-semibold">{member.name}</h4>
+                              <h4 className="font-semibold">{member.fullName || member.displayName || member.name}</h4>
                               <p className="text-sm text-gray-600">{member.role}</p>
                               <p className="text-xs text-gray-500 mt-1">{member.email}</p>
+                              {member.bio && <p className="text-xs text-gray-600 mt-2 line-clamp-2">{member.bio}</p>}
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {member.specialties.slice(0, 2).map((spec, idx) => (
                                   <Badge key={idx} variant="outline" className="text-xs">
                                     {spec}
                                   </Badge>
                                 ))}
+                              </div>
+                              <div className="flex gap-2 mt-3">
+                                <Button type="button" variant="outline" size="sm" onClick={() => openStaffDialog(member)}>
+                                  <Edit2 className="w-3 h-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button type="button" variant="outline" size="sm" onClick={() => handleDeleteStaff(member)}>
+                                  <Trash2 className="w-3 h-3 mr-1" />
+                                  Delete
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -500,19 +653,37 @@ export function BusinessDashboardPage() {
       </div>
 
       {/* Add Staff Dialog */}
-      <Dialog open={showAddStaff} onOpenChange={setShowAddStaff}>
-        <DialogContent>
+      <Dialog
+        open={showAddStaff}
+        onOpenChange={(open) => {
+          setShowAddStaff(open);
+          if (!open) resetStaffDialog();
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Staff Member</DialogTitle>
-            <DialogDescription>Add a new team member to your business</DialogDescription>
+            <DialogTitle>{editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}</DialogTitle>
+            <DialogDescription>Staff profiles are saved to your business account and can be tagged on posts.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4">
+              <img
+                src={staffImagePreview || staffForm.profileImage || undefined}
+                alt=""
+                className="w-20 h-20 rounded-full bg-gray-100 object-cover"
+              />
+              <label className="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer hover:bg-gray-50">
+                <Upload className="w-4 h-4" />
+                Choose Image
+                <input type="file" accept="image/*" className="hidden" onChange={handleStaffImageSelect} />
+              </label>
+            </div>
             <div>
               <Label htmlFor="staffName">Full Name *</Label>
               <Input
                 id="staffName"
-                value={newStaff.name}
-                onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })}
+                value={staffForm.fullName}
+                onChange={(e) => setStaffForm({ ...staffForm, fullName: e.target.value })}
                 placeholder="John Doe"
                 className="mt-1"
               />
@@ -521,10 +692,21 @@ export function BusinessDashboardPage() {
               <Label htmlFor="staffRole">Role *</Label>
               <Input
                 id="staffRole"
-                value={newStaff.role}
-                onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
+                value={staffForm.role}
+                onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })}
                 placeholder="Senior Barber"
                 className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="staffBio">Bio</Label>
+              <Textarea
+                id="staffBio"
+                value={staffForm.bio}
+                onChange={(e) => setStaffForm({ ...staffForm, bio: e.target.value })}
+                placeholder="Short profile for customers"
+                className="mt-1"
+                rows={3}
               />
             </div>
             <div>
@@ -532,8 +714,8 @@ export function BusinessDashboardPage() {
               <Input
                 id="staffEmail"
                 type="email"
-                value={newStaff.email}
-                onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
+                value={staffForm.email}
+                onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
                 placeholder="john@example.com"
                 className="mt-1"
               />
@@ -542,8 +724,8 @@ export function BusinessDashboardPage() {
               <Label htmlFor="staffPhone">Phone *</Label>
               <Input
                 id="staffPhone"
-                value={newStaff.phone}
-                onChange={(e) => setNewStaff({ ...newStaff, phone: e.target.value })}
+                value={staffForm.phone}
+                onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
                 placeholder="(555) 123-4567"
                 className="mt-1"
               />
@@ -552,17 +734,32 @@ export function BusinessDashboardPage() {
               <Label htmlFor="staffSpecialties">Specialties (comma-separated)</Label>
               <Input
                 id="staffSpecialties"
-                value={newStaff.specialties}
-                onChange={(e) => setNewStaff({ ...newStaff, specialties: e.target.value })}
+                value={staffForm.specialties}
+                onChange={(e) => setStaffForm({ ...staffForm, specialties: e.target.value })}
                 placeholder="Fades, Modern Cuts, Beard Trimming"
                 className="mt-1"
               />
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="staffInstagram">Instagram</Label>
+                <Input id="staffInstagram" value={staffForm.instagram} onChange={(e) => setStaffForm({ ...staffForm, instagram: e.target.value })} placeholder="@stylist" className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="staffTiktok">TikTok</Label>
+                <Input id="staffTiktok" value={staffForm.tiktok} onChange={(e) => setStaffForm({ ...staffForm, tiktok: e.target.value })} placeholder="@stylist" className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="staffWebsite">Website</Label>
+                <Input id="staffWebsite" value={staffForm.website} onChange={(e) => setStaffForm({ ...staffForm, website: e.target.value })} placeholder="https://..." className="mt-1" />
+              </div>
+            </div>
             <Button
-              onClick={handleAddStaff}
+              onClick={handleSaveStaff}
+              disabled={savingStaff}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
-              Add Staff Member
+              {savingStaff ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : editingStaff ? 'Save Changes' : 'Add Staff Member'}
             </Button>
           </div>
         </DialogContent>

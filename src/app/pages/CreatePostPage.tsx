@@ -46,6 +46,7 @@ export function CreatePostPage() {
   const [salonSearch, setSalonSearch] = useState('');
   const [selectedSalon, setSelectedSalon] = useState<SalonOption | null>(null);
   const [selectedStylist, setSelectedStylist] = useState<StaffOption | null>(null);
+  const [staffSearch, setStaffSearch] = useState('');
   const [selectorError, setSelectorError] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -60,6 +61,9 @@ export function CreatePostPage() {
   const isVideoPreview = selectedFile?.type.startsWith('video/');
   const salonOptions: SalonOption[] = salonData?.searchSalons || [];
   const staffOptions: StaffOption[] = staffData?.getSalonStaff || [];
+  const filteredStaffOptions = staffOptions.filter(member => (
+    `${member.displayName} ${member.role}`.toLowerCase().includes(staffSearch.trim().toLowerCase())
+  ));
   const canPriceServices = user?.accountType === 'business';
 
   const completedBookings = bookings.filter(b => b.status === 'completed');
@@ -78,6 +82,21 @@ export function CreatePostPage() {
     return () => window.clearTimeout(timer);
   }, [salonSearch, searchSalons, selectedSalon]);
 
+  useEffect(() => {
+    if (!user || user.accountType !== 'business' || selectedSalon) return;
+    const ownSalon = {
+      id: user.id,
+      name: user.businessName || user.name,
+      city: user.location,
+      logo: user.avatar,
+    };
+    setSelectedSalon(ownSalon);
+    setSalonSearch(ownSalon.name);
+    setBarberShop(ownSalon.name);
+    setLocation(user.location || '');
+    loadSalonStaff({ variables: { salonId: user.id } });
+  }, [loadSalonStaff, selectedSalon, user]);
+
   const handleBookingSelect = (bookingId: string) => {
     setSelectedBookingId(bookingId);
     const booking = completedBookings.find(b => b.id === bookingId);
@@ -94,6 +113,7 @@ export function CreatePostPage() {
     setBarberShop(salon.name);
     setLocation(salon.city || '');
     setSelectedStylist(null);
+    setStaffSearch('');
     setBarberName('');
     setSelectorError('');
     loadSalonStaff({ variables: { salonId: salon.id } });
@@ -104,12 +124,14 @@ export function CreatePostPage() {
     setBarberShop(value);
     setSelectedSalon(null);
     setSelectedStylist(null);
+    setStaffSearch('');
     setBarberName('');
   };
 
   const handleStylistSelect = (stylist: StaffOption) => {
     setSelectedStylist(stylist);
     setBarberName(stylist.displayName);
+    setStaffSearch(stylist.displayName);
     setSelectorError('');
   };
 
@@ -385,33 +407,62 @@ export function CreatePostPage() {
 
           <div className="space-y-2">
             <Label htmlFor="barberName">Barber / Stylist *</Label>
-            <Select
-              value={selectedStylist?.id || ''}
-              onValueChange={(value) => {
-                const stylist = staffOptions.find(member => member.id === value);
-                if (stylist) handleStylistSelect(stylist);
+            <Input
+              id="barberName"
+              value={staffSearch}
+              onChange={(e) => {
+                setStaffSearch(e.target.value);
+                setSelectedStylist(null);
+                setBarberName('');
               }}
               disabled={!selectedSalon || staffLoading || !!staffError}
-            >
-              <SelectTrigger id="barberName">
-                <SelectValue placeholder={
-                  !selectedSalon
-                    ? 'Select a salon first'
-                    : staffLoading
-                    ? 'Loading staff...'
-                    : staffOptions.length === 0
-                    ? 'No staff registered'
-                    : 'Choose a stylist'
-                } />
-              </SelectTrigger>
-              <SelectContent>
-                {staffOptions.map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
-                    {member.displayName} · {member.role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder={
+                !selectedSalon
+                  ? 'Select a salon first'
+                  : staffLoading
+                  ? 'Loading staff...'
+                  : staffOptions.length === 0
+                  ? 'No staff registered'
+                  : 'Search saved staff'
+              }
+              autoComplete="off"
+            />
+            {selectedSalon && !selectedStylist && !staffLoading && staffOptions.length > 0 && (
+              <div className="rounded-md border bg-white shadow-sm overflow-hidden">
+                {filteredStaffOptions.length > 0 ? filteredStaffOptions.map((member) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    onClick={() => handleStylistSelect(member)}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50"
+                  >
+                    <img src={member.avatar || undefined} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                    <span className="flex-1">
+                      <span className="block text-sm font-medium">{member.displayName}</span>
+                      <span className="block text-xs text-gray-500">{member.role}</span>
+                    </span>
+                  </button>
+                )) : (
+                  <div className="px-3 py-2 text-sm text-gray-500">No matching staff member</div>
+                )}
+              </div>
+            )}
+            {selectedStylist && (
+              <div className="flex items-center gap-3 rounded-md border bg-gray-50 px-3 py-2">
+                <img src={selectedStylist.avatar || undefined} alt="" className="w-9 h-9 rounded-full bg-gray-200 object-cover" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{selectedStylist.displayName}</p>
+                  <p className="text-xs text-gray-500">{selectedStylist.role}</p>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={() => {
+                  setSelectedStylist(null);
+                  setStaffSearch('');
+                  setBarberName('');
+                }}>
+                  Change
+                </Button>
+              </div>
+            )}
             {staffError && <p className="text-sm text-red-600">Could not load salon staff.</p>}
             {selectorError && <p className="text-sm text-red-600">{selectorError}</p>}
           </div>
