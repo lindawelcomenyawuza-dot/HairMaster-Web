@@ -27,6 +27,33 @@ export const REGISTER = gql`
   }
 `;
 
+export const SIGNUP = gql`
+  ${USER_FIELDS}
+  mutation Signup(
+    $name: String!
+    $email: String!
+    $password: String!
+    $phone: String
+    $consentAccepted: Boolean
+    $accountType: String
+  ) {
+    signup(
+      name: $name
+      email: $email
+      password: $password
+      phone: $phone
+      consentAccepted: $consentAccepted
+      accountType: $accountType
+    ) {
+      success
+      message
+      user {
+        ...UserFields
+      }
+    }
+  }
+`;
+
 export const LOGIN = gql`
   ${USER_FIELDS}
   mutation Login($email: String!, $password: String!) {
@@ -35,6 +62,15 @@ export const LOGIN = gql`
       user {
         ...UserFields
       }
+    }
+  }
+`;
+
+export const VERIFY_EMAIL = gql`
+  mutation VerifyEmail($token: String!) {
+    verifyEmail(token: $token) {
+      success
+      message
     }
   }
 `;

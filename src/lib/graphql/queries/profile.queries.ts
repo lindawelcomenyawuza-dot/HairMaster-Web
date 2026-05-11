@@ -17,6 +17,7 @@ export const USER_FIELDS = gql`
     currency
     businessName
     isVerified
+    emailVerified
     authProvider
     verificationBadge
     savedPosts
@@ -79,6 +80,7 @@ export const GET_USERS = gql`
       location
       businessName
       isVerified
+      emailVerified
       isFollowing
     }
   }

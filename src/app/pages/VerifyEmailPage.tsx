@@ -1,34 +1,43 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useMutation } from '@apollo/client/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Mail, XCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { getRequiredPublicApiUrl } from '../../lib/api';
+import { VERIFY_EMAIL } from '../../lib/graphql/mutations';
 import { toast } from 'sonner';
 
 const API_URL = getRequiredPublicApiUrl();
+
+type VerifyEmailResponse = {
+  verifyEmail?: {
+    success: boolean;
+    message: string;
+  };
+};
 
 export default function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const initialEmail = searchParams.get('email') || '';
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'pending' | 'verifying' | 'verified' | 'error'>(token ? 'verifying' : 'pending');
   const [loading, setLoading] = useState(false);
+  const [verifyEmail] = useMutation<VerifyEmailResponse>(VERIFY_EMAIL);
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`)
-      .then(async (res) => {
-        if (!res.ok) throw new Error((await res.json()).error || 'Verification failed');
+    verifyEmail({ variables: { token } })
+      .then(({ data }) => {
+        if (!data?.verifyEmail?.success) throw new Error('Verification failed');
         setStatus('verified');
       })
       .catch(() => setStatus('error'));
-  }, [token]);
+  }, [token, verifyEmail]);
 
   const handleResend = async () => {
     if (!email) {

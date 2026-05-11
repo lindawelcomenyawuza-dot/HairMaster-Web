@@ -4,7 +4,7 @@ import { useQuery, useMutation, useApolloClient } from '@apollo/client/react';
 import { GET_POSTS, GET_BOOKINGS, GET_ME, GET_CONVERSATIONS, GET_MESSAGES, GET_MY_TOKENS, GET_TOKEN_TIERS } from '../../lib/graphql/queries';
 import {
   LOGIN,
-  REGISTER,
+  SIGNUP,
   CREATE_POST,
   REPOST,
   TOGGLE_LIKE,
@@ -41,6 +41,7 @@ export interface User {
   currency?: string;
   businessName?: string;
   isVerified?: boolean;
+  emailVerified?: boolean;
   authProvider?: 'email' | 'google';
   verificationBadge?: 'verified' | 'business' | 'pro';
   subscription?: {
@@ -322,9 +323,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { data: postsData, loading: postsLoading, refetch: refetchPosts } =
     useQuery<GetPostsResponse>(GET_POSTS);
-  const { data: bookingsData } = useQuery(GET_BOOKINGS, { skip: !user });
-  const { data: conversationsData } = useQuery(GET_CONVERSATIONS, { skip: !user });
-  const { data: tokensData, loading: tokensLoading, refetch: refetchTokens } = useQuery(GET_MY_TOKENS, { skip: !user });
+  const emailVerified = user?.authProvider === 'google' || (user?.emailVerified ?? user?.isVerified) !== false;
+  const { data: bookingsData } = useQuery(GET_BOOKINGS, { skip: !user || !emailVerified });
+  const { data: conversationsData } = useQuery(GET_CONVERSATIONS, { skip: !user || !emailVerified });
+  const { data: tokensData, loading: tokensLoading, refetch: refetchTokens } = useQuery(GET_MY_TOKENS, { skip: !user || !emailVerified });
   const { data: tiersData } = useQuery(GET_TOKEN_TIERS);
 
   const posts: Post[] = (postsData?.posts || []).map(normalizePost);
@@ -334,7 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const tokenTiers: TokenTier[] = (tiersData as any)?.tokenTiers || [];
 
   const [loginMutation] = useMutation(LOGIN);
-  const [registerMutation] = useMutation(REGISTER);
+  const [signupMutation] = useMutation(SIGNUP);
   const [createPostMutation] = useMutation(CREATE_POST);
   const [repostMutation] = useMutation(REPOST);
   const [toggleLikeMutation] = useMutation(TOGGLE_LIKE);
@@ -391,15 +393,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (name: string, email: string, password: string, accountType: string | undefined, phone: string, consentAccepted: boolean) => {
-    const { data } = await registerMutation({ variables: { name, email, password, accountType, phone, consentAccepted } });
+    const { data } = await signupMutation({ variables: { name, email, password, accountType, phone, consentAccepted } });
     const d = data as any;
-    if (d?.register) {
-      if (d.register.token) {
-        localStorage.setItem('hm_token', d.register.token);
-        sessionStorage.setItem('hm_token', d.register.token);
-        setUser(d.register.user);
-      }
-    }
+    if (!d?.signup?.success) throw new Error('Sign up failed. Please try again.');
+    clearPersistedAuthToken();
+    setUser(null);
   };
 
   const logout = () => {
