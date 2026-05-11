@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, Share2, MapPin, DollarSign, Calendar, MessageCircle, Bookmark, Send, CheckCircle, RotateCcw } from 'lucide-react';
+import { Heart, Share2, MapPin, Calendar, MessageCircle, Bookmark, Send, CheckCircle, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -185,7 +185,6 @@ export function PostCard({ post }: PostCardProps) {
               </button>
             </div>
             <div className="flex items-center gap-1 text-green-600 font-semibold">
-              <DollarSign className="w-5 h-5" />
               {formatCurrencySimple(post.price, post.currency ?? 'ZAR')}
             </div>
           </div>
@@ -319,7 +318,7 @@ export function PostCard({ post }: PostCardProps) {
             <div className="pt-2 border-t">
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span className="text-green-600">{post.price}</span>
+                <span className="text-green-600">${post.price}</span>
               </div>
             </div>
             <Button
