@@ -18,10 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen w-full">
         <ApolloClientProvider>
           <AppProvider>
-            <VerificationGate>{children}</VerificationGate>
+            <VerificationGate>
+              <main className="min-h-screen w-full pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+                {children}
+              </main>
+            </VerificationGate>
             <BottomNavigation />
             <Toaster />
           </AppProvider>
