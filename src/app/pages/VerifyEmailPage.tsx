@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Mail, XCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
+import { useApp } from '../context/AppContext';
 import { getRequiredPublicApiUrl } from '../../lib/api';
 import { VERIFY_EMAIL } from '../../lib/graphql/mutations';
 import { toast } from 'sonner';
@@ -25,6 +25,8 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [email, setEmail] = useState('');
+  const { user } = useApp();
+  const [cooldown, setCooldown] = useState(0);
   const [status, setStatus] = useState<'pending' | 'verifying' | 'verified' | 'error'>(token ? 'verifying' : 'pending');
   const [loading, setLoading] = useState(false);
   const [verifyEmail] = useMutation<VerifyEmailResponse>(VERIFY_EMAIL);
@@ -39,9 +41,15 @@ export default function VerifyEmailPage() {
       .catch(() => setStatus('error'));
   }, [token, verifyEmail]);
 
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) setEmail(emailParam);
+    else if (user?.email) setEmail(user.email);
+  }, [searchParams, user]);
+
   const handleResend = async () => {
     if (!email) {
-      toast.error('Enter your email address');
+      toast.error('Email not available');
       return;
     }
     setLoading(true);
@@ -53,12 +61,19 @@ export default function VerifyEmailPage() {
       });
       if (!res.ok) throw new Error('Could not resend verification email');
       toast.success('Verification email sent');
+      setCooldown(30);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not resend verification email');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
 
   if (status === 'verified') {
     return (
@@ -96,14 +111,13 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <Button onClick={handleResend} disabled={loading} variant="outline" className="w-full">
-            {loading ? 'Sending...' : 'Resend Verification Email'}
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Verification sent to <span className="font-medium text-gray-800">{email || 'your email'}</span>
+            </p>
+          </div>
+          <Button onClick={handleResend} disabled={loading || cooldown > 0} variant="outline" className="w-full">
+            {loading ? 'Sending...' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Verification Email'}
           </Button>
           <Button onClick={() => router.push('/login')} className="w-full bg-gradient-to-r from-purple-600 to-blue-600">
             Back to Login

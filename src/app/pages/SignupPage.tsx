@@ -35,7 +35,7 @@ export function SignupPage() {
     try {
       const displayName = accountType === 'business' ? businessName : name;
       await register(displayName, email, password, accountType!, phone, consentAccepted);
-      router.push('/verify-email');
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
